@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,13 +12,18 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,7 +55,7 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
         SimpleDatabase.DatabaseListener, HistoryAdapter.OnListItemClickedListener,
         AlarmDialogFragment.AlarmActionListener, QuickSettingsChangeListener {
 
-    private static final String TAG = "GLUCOSE::" + MainActivity.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + MainActivity.class.getSimpleName();
 
     private static final String INTENT_ALARM_ACTION = "alarm";
 
@@ -262,6 +268,32 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
     protected void onResume() {
         super.onResume();
         if (mService != null) onDataUpdated();
+        if (JoH.ratelimit("battery-optimize", 5)) {
+            checkBatteryOptimization();
+        }
+    }
+
+    private void checkBatteryOptimization() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            final String packageName = getPackageName();
+            //Log.d(TAG, "Maybe ignoring battery optimization");
+            final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                Log.d(TAG, "Requesting ignore battery optimization");
+                try {
+                    final Intent intent = new Intent();
+                    // ignoring battery optimizations required for constant connection
+                    // to peripheral device - eg CGM transmitter.
+                    intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    intent.setData(Uri.parse("package:" + packageName));
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    final String msg = "Device does not appear to support battery optimization whitelisting!";
+                    JoH.static_toast_short(msg);
+                    Log.wtf(TAG, msg);
+                }
+            }
+        }
     }
 
     @Override
