@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
@@ -21,7 +20,7 @@ import java.util.Date;
  */
 public class AlarmReceiver extends WakefulBroadcastReceiver {
 
-    private static final String TAG = "GLUCOSE::" + AlarmReceiver.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + AlarmReceiver.class.getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -33,21 +32,30 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         startWakefulService(context, i);
     }
 
+    public static long getDelayPeriod(Context context) {
+        return Math.max(300000, Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(context)) * 60000);
+    }
+
     public static void post(Context context) {
-        long delay = Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(context)) * 60000 + 120000;
+        final long previous = PreferenceManager.getDefaultSharedPreferences(context).getLong("next_check", 0);
+        Log.d(TAG, "Previously check was scheduled for: " + JoH.dateTimeText(previous));
+        final long period = Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(context)) * 60000;
+        final long till = JoH.msTill(previous);
+        final long delay;
+        if ((till > 0) && (till < period)) {
+            delay = till; // reschedule same time
+        } else {
+            // next period
+            delay = getDelayPeriod(context);
+        }
         Log.i(TAG, "set next check: " + delay + " (" + new SimpleDateFormat("HH:mm:ss")
                 .format(new Date(delay + System.currentTimeMillis())) + ") "
                 + new Exception().getStackTrace()[1]);
-        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent intent = getAlarmReceiverIntent(context);
         alarmManager.cancel(intent);
-        if (android.os.Build.VERSION.SDK_INT <= 18) {
-            alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + delay, intent);
-        } else {
-            alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + delay, intent);
-        }
+
+        JoH.wakeUpIntent(context, delay, intent);
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putLong("next_check", System.currentTimeMillis() + delay).apply();
     }
