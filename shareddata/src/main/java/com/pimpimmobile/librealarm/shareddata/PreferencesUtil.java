@@ -87,7 +87,7 @@ public class PreferencesUtil {
     }
 
     public static String getCheckGlucoseInterval(Context context) {
-        return getString(context, context.getString(R.string.pref_key_glucose_interval), "10");
+        return getString(context, context.getString(R.string.pref_key_glucose_interval), "5");
     }
 
     public static Boolean shouldUseRoot(Context context) {
