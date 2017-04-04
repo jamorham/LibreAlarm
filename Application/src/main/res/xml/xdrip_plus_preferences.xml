@@ -2,11 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="xDrip+ broadcast">
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="@string/key_xdrip_plus_broadcast"
             android:summary="@string/xdrip_plus_broadcast_summary" />
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="@string/key_all_alarms_disabled"
             android:summary="@string/all_alarms_disabled_summary" />
     </PreferenceCategory>
