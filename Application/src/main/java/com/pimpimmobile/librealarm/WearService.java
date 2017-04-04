@@ -112,7 +112,7 @@ public class WearService extends Service implements DataApi.DataListener, Messag
         }
     }
 
-    public static void setFailoverTimer(long period) {
+    public synchronized static void setFailoverTimer(long period) {
         if (shouldServiceRun()) {
             Log.d(TAG, "setFailoverTimer: Fallover Restarting in: " + (period / 60000 + " minutes"));
             JoH.cancelAlarm(libreAlarm.getAppContext(), serviceFailoverIntent);

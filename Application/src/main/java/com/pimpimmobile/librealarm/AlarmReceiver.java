@@ -36,7 +36,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         return Math.max(300000, Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(context)) * 60000);
     }
 
-    public static void post(Context context) {
+    public synchronized static void post(Context context) {
         final long previous = PreferenceManager.getDefaultSharedPreferences(context).getLong("next_check", 0);
         Log.d(TAG, "Previously check was scheduled for: " + JoH.dateTimeText(previous));
         final long period = Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(context)) * 60000;
