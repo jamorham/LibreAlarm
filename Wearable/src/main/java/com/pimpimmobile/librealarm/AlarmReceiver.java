@@ -19,7 +19,7 @@ import java.util.Date;
  */
 public class AlarmReceiver extends WakefulBroadcastReceiver {
 
-    private static final String TAG = "GLUCOSE::" + AlarmReceiver.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + AlarmReceiver.class.getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {

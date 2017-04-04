@@ -19,7 +19,7 @@ import java.nio.charset.Charset;
 
 public class RootTools {
 
-    private static final String TAG = "GLUCOSE::" + RootTools.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + RootTools.class.getSimpleName();
     private static final boolean DEBUG = AlgorithmUtil.DEBUG;
 
     private static Boolean sHasRoot = null;

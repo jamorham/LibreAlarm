@@ -19,7 +19,7 @@ import java.util.List;
 
 public class SimpleDatabase extends SQLiteOpenHelper {
 
-    private static final String TAG = "GLUCOSE::" + SimpleDatabase.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + SimpleDatabase.class.getSimpleName();
 
     private DatabaseListener mListener;
 

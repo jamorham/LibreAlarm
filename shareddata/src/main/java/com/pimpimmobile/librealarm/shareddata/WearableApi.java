@@ -18,7 +18,7 @@ import java.util.HashMap;
 
 public class WearableApi {
 
-    private static final String TAG = "GLUCOSE::" + WearableApi.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + WearableApi.class.getSimpleName();
 
     private static final String PREFIX = "/librealarm";
 

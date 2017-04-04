@@ -24,7 +24,7 @@ import java.util.HashMap;
 
 public class DataLayerListenerService extends WearableListenerService {
 
-    private static final String TAG = "GLUCOSE::" + DataLayerListenerService.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + DataLayerListenerService.class.getSimpleName();
 
     GoogleApiClient mGoogleApiClient;
 

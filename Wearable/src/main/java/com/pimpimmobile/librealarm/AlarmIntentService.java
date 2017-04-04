@@ -8,7 +8,7 @@ import com.pimpimmobile.librealarm.shareddata.PreferencesUtil;
 
 public class AlarmIntentService extends IntentService {
 
-    private static final String TAG = "GLUCOSE::" + AlarmIntentService.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + AlarmIntentService.class.getSimpleName();
 
     public AlarmIntentService() {
         super("MyAlarmIntentService");

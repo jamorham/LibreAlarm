@@ -45,7 +45,7 @@ import static com.pimpimmobile.librealarm.shareddata.AlgorithmUtil.DEBUG;
 public class WearActivity extends Activity implements ConnectionCallbacks,
         OnConnectionFailedListener, MessageApi.MessageListener {
 
-    private static final String TAG = "GLUCOSE::" + WearActivity.class.getSimpleName();
+    private static final String TAG = "LibreAlarm" + WearActivity.class.getSimpleName();
 
     public static final String EXTRA_CANCEL_ALARM = "cancel_alarm";
 
