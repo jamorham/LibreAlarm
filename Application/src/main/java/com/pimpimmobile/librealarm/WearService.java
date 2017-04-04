@@ -289,13 +289,25 @@ public class WearService extends Service implements DataApi.DataListener, Messag
         try {
             Log.i(TAG, "onStartCommand!!! " + JoH.dateTimeText(JoH.tsl()));
             immortality(0);
+            if (intent != null) {
+                Log.d(TAG, "Intent: " + intent.getAction());
+            } else {
+                Log.d(TAG, "Null intent");
+            }
+            if (mReadingStatus == null) {
+                Log.d(TAG, "mReadingStatus is Null");
+            } else {
+                Log.d(TAG, "mReadingStatus status: " + mReadingStatus.status);
+            }
             // TODO check what if mReadingStatus == null
             if (intent != null && "alarmreceiver".equals(intent.getAction()) &&
                     mReadingStatus != null && mReadingStatus.status != Status.Type.NOT_RUNNING) {
                 long delay = Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(this)) * 60000;
                 if (mLastReading == null || mLastReading.realDate + delay < System.currentTimeMillis()) {
-                    Log.i(TAG, "trigger glucose");
+                    Log.i(TAG, "Trigger Glucose!");
                     sendMessage(WearableApi.TRIGGER_GLUCOSE, "", null);
+                } else {
+                    Log.d(TAG, "last reading was: " + JoH.msSince(mLastReading.realDate));
                 }
             }
             reconnectGoogleApi();
