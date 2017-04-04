@@ -41,6 +41,7 @@ public class WearableApi {
 
     public static boolean sendData(GoogleApiClient client, String command, String key, String data, ResultCallback<DataApi.DataItemResult> listener) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create(command);
+        putDataMapReq.setUrgent();
         putDataMapReq.getDataMap().putString(key, data);
         return sendData(client, putDataMapReq, listener);
     }
