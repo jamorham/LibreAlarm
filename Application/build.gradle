@@ -35,7 +35,7 @@ android {
 
 dependencies {
     compile 'com.android.support:recyclerview-v7:23.3.0'
-    compile 'com.google.android.gms:play-services-wearable:8.4.0'
+    compile 'com.google.android.gms:play-services-wearable:9.4.0'
     compile project(':shareddata')
     wearApp project(':Wearable')
     compile 'com.android.support:appcompat-v7:23.3.0'
