@@ -34,13 +34,20 @@
             </intent-filter>
         </activity>
         <service android:name=".WearService" android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.USER_PRESENT"/>
-            </intent-filter>
         </service>
+
+        <receiver
+            android:name=".BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!--<intent-filter>
+                <action android:name="android.intent.action.USER_PRESENT" />
+            </intent-filter>-->
+        </receiver>
 
         <activity android:name=".nightscout.NightscoutPreferences" />
 
