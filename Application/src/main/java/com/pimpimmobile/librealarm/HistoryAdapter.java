@@ -46,8 +46,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             Collections.sort(mHistory);
             Collections.reverse(mHistory);
         }
-        notifyDataSetChanged();
-    }
+        JoH.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
+       }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
