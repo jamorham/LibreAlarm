@@ -38,24 +38,33 @@ public class RootTools {
     }
 
     public synchronized boolean isHasRoot() {
-        if (sHasRoot == null) sHasRoot = (new File("/system/xbin/su").exists());
+        if (sHasRoot == null) {
+            sHasRoot = (new File("/system/xbin/su").exists());
+            Log.d(TAG, "shasRoot = " + sHasRoot);
+        }
         return sHasRoot;
     }
 
-    private void createScripts() {
+    private synchronized void createScripts() {
         if (sScriptsCreated) return;
         // switches to lowest possible power levels on cpu
-        String script_name = mContext.getFilesDir()+"/powersave.sh";
-        writeToFile(script_name,"echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho 0 >/sys/devices/system/cpu/cpu1/online\n");
+        final File file_dir = mContext.getFilesDir();
+        if (!file_dir.exists()) {
+            Log.d(TAG, "Creating folder for: " + file_dir);
+            file_dir.mkdirs();
+        }
+
+        String script_name = file_dir + "/powersave.sh";
+        writeToFile(script_name, "echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho 0 >/sys/devices/system/cpu/cpu1/online\n");
 
         // restore cpu speed somewhat
-        script_name = mContext.getFilesDir()+"/performance.sh";
-        writeToFile(script_name,"echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho 1 >/sys/devices/system/cpu/cpu1/online\n");
+        script_name = file_dir + "/performance.sh";
+        writeToFile(script_name, "echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho 1 >/sys/devices/system/cpu/cpu1/online\n");
 
 
         // disables the touch sense on the keypad by nuking the driver
-        script_name = mContext.getFilesDir()+"/killtouch.sh";
-        writeToFile(script_name,"echo synaptics_dsx.0 >/sys/bus/platform/drivers/synaptics_dsx/unbind\n" +
+        script_name = file_dir + "/killtouch.sh";
+        writeToFile(script_name, "echo synaptics_dsx.0 >/sys/bus/platform/drivers/synaptics_dsx/unbind\n" +
                 "a=`grep -l ^/system/bin/key_sleep_vibrate_service /proc/*/cmdline`\n" +
                 "if [ \"$a\" != \"\" ]\n" +
                 "then\n" +
@@ -89,7 +98,7 @@ public class RootTools {
     }
 
     public void executeScripts(boolean state) {
-        executeScripts(state,0);
+        executeScripts(state, 0);
     }
 
     // platform specific method for enabling/disabling nfc - not sure if there is a better api based method
@@ -107,16 +116,16 @@ public class RootTools {
         if (mWakeLock.isHeld()) mWakeLock.release();
     }
 
-    private static String showProcessOutput(Process execute)
-    {
+    private static String showProcessOutput(Process execute) {
         try {
             execute.waitFor();
-            if (DEBUG) Log.d(TAG, "PROCESS OUTPUT: " + (new BufferedReader(new InputStreamReader(execute.getInputStream())).readLine()));
+            if (DEBUG)
+                Log.d(TAG, "PROCESS OUTPUT: " + (new BufferedReader(new InputStreamReader(execute.getInputStream())).readLine()));
             String error = (new BufferedReader(new InputStreamReader(execute.getErrorStream())).readLine());
             if (DEBUG) Log.d(TAG, " PROCESS ERROR: " + error);
             return error;
         } catch (InterruptedException | IOException e) {
-            Log.d(TAG, "Got error showing process output: "+e.toString());
+            Log.d(TAG, "Got error showing process output: " + e.toString());
         }
         return "other error";
     }
@@ -134,12 +143,20 @@ public class RootTools {
 
         // platform specific method for enabling/disabling nfc - not sure if there is a better api based method
         private void executeScripts(final boolean state, final long delay) {
-            Message message = new Message();
-            message.what = state ? 1 : 0;
-            if (delay > 0) {
-                mHandler.sendMessageDelayed(message, delay);
-            } else {
-                mHandler.sendMessage(message);
+            try {
+                final Message message = new Message();
+                message.what = state ? 1 : 0;
+                if (delay > 0) {
+                    mHandler.sendMessageDelayed(message, delay);
+                } else {
+                    mHandler.sendMessage(message);
+                }
+            } catch (IllegalStateException e) {
+                Log.e(TAG, "Got state exception in executeScripts");
+                mHandler = new Handler(getLooper(), this);
+                if (JoH.ratelimit("looper-state-exception", 2)) {
+                    executeScripts(state, delay);
+                }
             }
         }
 
@@ -149,20 +166,20 @@ public class RootTools {
 
             try {
                 if (mNfcDestinationState == state) {
-                    Log.e(TAG,"Destination state changed from: "+state+" to "+ mNfcDestinationState +" .. skipping switch!");
+                    Log.e(TAG, "Destination state changed from: " + state + " to " + mNfcDestinationState + " .. skipping switch!");
                 } else {
                     //final boolean needs_root = true; // unclear at the moment whether we need root for this
 
                     if (state) {
-                        if (DEBUG) Log.d(TAG,"Switching to higher performance cpu speed");
-                        final Process execute4 = Runtime.getRuntime().exec("su -c sh "+mContext.getFilesDir()+"/performance.sh");
+                        if (DEBUG) Log.d(TAG, "Switching to higher performance cpu speed");
+                        final Process execute4 = Runtime.getRuntime().exec("su -c sh " + mContext.getFilesDir() + "/performance.sh");
                     }
 
-                    for (int counter=0 ;counter < 5 ;counter++) {
+                    for (int counter = 0; counter < 5; counter++) {
                         Log.i(TAG, "Trying to switch nfc " + (state ? "on" : "off"));
                         final Process execute = Runtime.getRuntime().exec("su -c service call nfc " + (state ? "6" : "5")); // turn NFC on or off
                         if (showProcessOutput(execute) != null) {
-                            Log.e(TAG, "Got error- retrying.."+counter);
+                            Log.e(TAG, "Got error- retrying.." + counter);
                         } else {
                             break;
                         }
@@ -184,7 +201,7 @@ public class RootTools {
                 }
 
             } catch (Exception e) {
-                Log.e(TAG, "Got exception executing root nfc off: "+e.toString());
+                Log.e(TAG, "Got exception executing root nfc off: " + e.toString());
             } finally {
                 if (mWakeLock.isHeld()) mWakeLock.release();
             }

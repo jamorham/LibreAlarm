@@ -147,8 +147,11 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
         if (PreferencesUtil.getIsStarted(this)) AlarmReceiver.post(this, 20000);
 
         if (PreferencesUtil.shouldUseRoot(this)) {
+            Log.d(TAG,"Using ROOT options!");
             mRootTools = new RootTools(this);
             mRootTools.executeScripts(true); // turn it on
+        } else {
+            Log.d(TAG,"Not using root options");
         }
 
         BatteryManager bm = (BatteryManager)getSystemService(BATTERY_SERVICE);

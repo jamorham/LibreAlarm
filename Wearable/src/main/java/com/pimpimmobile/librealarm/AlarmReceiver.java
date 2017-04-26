@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
@@ -33,11 +34,16 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         Log.i(TAG, "set next check: " + delay + " (" + new SimpleDateFormat("HH:mm:ss")
                 .format(new Date(delay + System.currentTimeMillis())) + ") "
                 + new Exception().getStackTrace()[1]);
-        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        PendingIntent intent = getAlarmReceiverIntent(context);
+        final AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        final PendingIntent intent = getAlarmReceiverIntent(context);
         alarmManager.cancel(intent);
-        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + delay, intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + delay, intent);
+        } else {
+            alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + delay, intent);
+        }
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putLong("next_check", System.currentTimeMillis() + delay).apply();
     }

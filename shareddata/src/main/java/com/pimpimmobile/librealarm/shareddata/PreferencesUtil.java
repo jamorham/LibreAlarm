@@ -13,6 +13,9 @@ import java.util.Iterator;
 
 public class PreferencesUtil {
 
+    public static final String TRUE_MARKER = "___TRUE___";
+    public static final String FALSE_MARKER = "___FALSE___";
+
     // Used on phone
     public static Boolean isNsRestEnabled(Context context) {
         return getBoolean(context, "ns_rest");
@@ -35,6 +38,15 @@ public class PreferencesUtil {
 
     public static boolean getIsStarted(Context context) {
         return getBoolean(context, "startstopflag");
+    }
+
+    // Used on phone
+    public static void setIsStartedPhone(Context context, boolean started) {
+        setBoolean(context, "phone-startstopflag", started);
+    }
+
+    public static boolean getIsStartedPhone(Context context) {
+        return getBoolean(context, "phone-startstopflag", true);
     }
 
     public static void setRetries(Context context, int attempts) {
@@ -155,6 +167,10 @@ public class PreferencesUtil {
 
     public static void putString(Context context, String key, String value) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString(key, value).apply();
+    }
+
+    public static void putBoolean(Context context, String key, boolean value) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(key, value).apply();
     }
 
     public static float getFloat(Context context, int id) {

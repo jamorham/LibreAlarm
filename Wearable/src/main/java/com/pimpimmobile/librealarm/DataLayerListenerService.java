@@ -24,7 +24,7 @@ import java.util.HashMap;
 
 public class DataLayerListenerService extends WearableListenerService {
 
-    private static final String TAG = "LibreAlarm" + DataLayerListenerService.class.getSimpleName();
+    private static final String TAG = "LibreAlarmData";
 
     GoogleApiClient mGoogleApiClient;
 
@@ -72,7 +72,13 @@ public class DataLayerListenerService extends WearableListenerService {
                     DataMap dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
                     for (String key : dataMap.keySet()) {
                         newSettings.put(key, dataMap.getString(key, null));
-                        PreferencesUtil.putString(this, key, newSettings.get(key));
+                        final String this_value = newSettings.get(key);
+                        if (this_value.equals(PreferencesUtil.TRUE_MARKER) || this_value.equals(PreferencesUtil.FALSE_MARKER)) {
+                            // its a boolean type
+                            PreferencesUtil.putBoolean(this, key, this_value.equals(PreferencesUtil.TRUE_MARKER));
+                        } else {
+                            PreferencesUtil.putString(this, key, this_value);
+                        }
                     }
 
                     WearableApi.sendMessage(mGoogleApiClient, WearableApi.SETTINGS, PreferencesUtil.toString(newSettings), null);
