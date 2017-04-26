@@ -32,6 +32,7 @@ public class Preferences extends Activity implements SharedPreferences.OnSharedP
     @Override
     protected void onDestroy() {
         PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+        WearService.pushSettingsNow();
         super.onDestroy();
     }
 

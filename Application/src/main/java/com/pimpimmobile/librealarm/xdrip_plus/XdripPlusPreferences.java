@@ -8,6 +8,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
 import com.pimpimmobile.librealarm.R;
+import com.pimpimmobile.librealarm.WearService;
 
 import java.util.HashMap;
 
@@ -41,6 +42,7 @@ public class XdripPlusPreferences extends Activity implements SharedPreferences.
     @Override
     protected void onDestroy() {
         PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+        WearService.pushSettingsNow();
         super.onDestroy();
     }
 
