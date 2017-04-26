@@ -33,6 +33,7 @@ public class WearableApi {
 
     public static boolean sendData(GoogleApiClient client, String command, HashMap<String, String> pairs, ResultCallback<DataApi.DataItemResult> listener) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create(command);
+        //putDataMapReq.setUrgent();
         for (String key : pairs.keySet()) {
             putDataMapReq.getDataMap().putString(key, pairs.get(key));
         }
@@ -41,7 +42,7 @@ public class WearableApi {
 
     public static boolean sendData(GoogleApiClient client, String command, String key, String data, ResultCallback<DataApi.DataItemResult> listener) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create(command);
-        putDataMapReq.setUrgent();
+        //putDataMapReq.setUrgent();
         putDataMapReq.getDataMap().putString(key, data);
         return sendData(client, putDataMapReq, listener);
     }
@@ -49,7 +50,7 @@ public class WearableApi {
     private static boolean sendData(GoogleApiClient client, PutDataMapRequest putDataMapReq, ResultCallback<DataApi.DataItemResult> listener) {
         if (client.isConnected()) {
             Log.i(TAG, "update settings");
-            putDataMapReq.setUrgent();
+           // putDataMapReq.setUrgent();
             PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
             PendingResult<DataApi.DataItemResult> pR =
                     Wearable.DataApi.putDataItem(client, putDataReq);
@@ -72,7 +73,7 @@ public class WearableApi {
                         Wearable.NodeApi.getConnectedNodes( client ).await();
                 for(Node node : nodes.getNodes()) {
                     Log.i(TAG, "sending to " + node.getId() + ", command: " + command);
-                    PendingResult<MessageApi.SendMessageResult> pR =
+                    final PendingResult<MessageApi.SendMessageResult> pR =
                             Wearable.MessageApi.sendMessage(client, node.getId(), command, message);
                     if (listener != null) pR.setResultCallback(listener);
                 }
