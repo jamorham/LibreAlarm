@@ -76,6 +76,7 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG,"Local Service connected!");
             mService = ((WearService.WearServiceBinder) service).getService();
             mService.setListener(MainActivity.this, MainActivity.this);
             onDataUpdated();
@@ -133,7 +134,9 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
             public void onDrawerClosed(View drawerView) {
                 HashMap<String, String> savedSettings = mQuickSettings.saveSettings();
                 if (savedSettings.size() > 0) {
+                    WearService.pushSettingsNow();
                     mService.sendData(WearableApi.SETTINGS, savedSettings, null);
+
                 }
                 super.onDrawerClosed(drawerView);
             }
@@ -319,8 +322,16 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
             for (String key : bundle.keySet()) {
                 settingsUpdated.put(key, bundle.getString(key));
             }
-            if (settingsUpdated.containsKey(getString(R.string.pref_key_mmol))) mQuickSettings.refresh();
-            if (settingsUpdated.size() > 0) mService.sendData(WearableApi.SETTINGS, settingsUpdated, null);
+            if (settingsUpdated.containsKey(getString(R.string.pref_key_mmol)))
+                mQuickSettings.refresh();
+            if (settingsUpdated.size() > 0) {
+                if (mService != null) {
+                    WearService.pushSettingsNow();
+                    mService.sendData(WearableApi.SETTINGS, settingsUpdated, null);
+                } else {
+                    Log.wtf(TAG, "mService was null when settings were updated");
+                }
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -360,52 +371,67 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
 
     @Override
     public void onDataUpdated() {
-        onDatabaseChange();
-        Status status = mService.getReadingStatus();
-        mProgressBar.setVisibility((status != null && status.status == Type.ATTEMPTING) ? View.VISIBLE : View.GONE);
-        if (status != null && mService.isConnected()) {
-            switch (status.status) {
-                case ALARM_HIGH:
-                case ALARM_LOW:
-                case ALARM_OTHER:
-                    mActionButton.setText(R.string.button_alarm);
-                    mActionButton.setVisibility(View.VISIBLE);
+        final Context context = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onDatabaseChange();
+                Status status = mService.getReadingStatus();
+                mProgressBar.setVisibility((status != null && status.status == Type.ATTEMPTING) ? View.VISIBLE : View.GONE);
+                if (status != null && mService.isConnected()) {
+                    switch (status.status) {
+                        case ALARM_HIGH:
+                        case ALARM_LOW:
+                        case ALARM_OTHER:
+                            mActionButton.setText(R.string.button_alarm);
+                            mActionButton.setVisibility(View.VISIBLE);
+                            mTriggerGlucoseButton.setVisibility(View.GONE);
+                            break;
+                        case ATTEMPTING:
+                        case ATTENPT_FAILED:
+                        case WAITING:
+                            mActionButton.setText(R.string.button_stop);
+                            mActionButton.setVisibility(View.VISIBLE);
+                            mTriggerGlucoseButton.setVisibility(View.VISIBLE);
+                            break;
+                        case NOT_RUNNING:
+                            mActionButton.setText(R.string.button_start);
+                            mActionButton.setVisibility(View.VISIBLE);
+                            mTriggerGlucoseButton.setVisibility(View.GONE);
+                            break;
+                    }
+                } else {
+                    mActionButton.setVisibility(View.GONE);
                     mTriggerGlucoseButton.setVisibility(View.GONE);
-                    break;
-                case ATTEMPTING:
-                case ATTENPT_FAILED:
-                case WAITING:
-                    mActionButton.setText(R.string.button_stop);
-                    mActionButton.setVisibility(View.VISIBLE);
-                    mTriggerGlucoseButton.setVisibility(View.VISIBLE);
-                    break;
-                case NOT_RUNNING:
-                    mActionButton.setText(R.string.button_start);
-                    mActionButton.setVisibility(View.VISIBLE);
-                    mTriggerGlucoseButton.setVisibility(View.GONE);
-                    break;
-            }
-        } else {
-            mActionButton.setVisibility(View.GONE);
-            mTriggerGlucoseButton.setVisibility(View.GONE);
-        }
+                }
 
-        if (mIsFirstStartup && status == null) {
-            mStatusTextView.setText(R.string.status_message_first_startup);
-        } else {
-            mStatusTextView.setText(mService.getStatusString());
-            // TODO add layout item for battery instead of using append
-            if (mService.getBatteryLevel()>0) mStatusTextView.append(" Batt: " + mService.getBatteryLevel() + "%");
-            if (PreferencesUtil.shouldUseRoot(this) && status != null &&
-                    status.status == Type.ATTEMPTING && !status.hasRoot) {
-                mStatusTextView.append(" (no SuperSU)");
-            }
-            // simple indicator of root status, supersu root for wear is available at:
-            // http://forum.xda-developers.com/attachment.php?attachmentid=3342605&d=1433157678
-            // sha1: 00c2ccd6ff356fa5cf73124e978fc192af186d2d
-        }
+                if (mIsFirstStartup && status == null) {
+                    mStatusTextView.setText(R.string.status_message_first_startup);
+                } else {
 
-        updateAlarmSnoozeViews();
+                    if (mService == null) {
+                        mStatusTextView.append("\nService is not connected, don't try to change anything yet!");
+                    } else {
+                        mStatusTextView.setText(mService.getStatusString());
+                        // TODO add layout item for battery instead of using append
+                        if (mService.getBatteryLevel() > 0)
+                            mStatusTextView.append(" Batt: " + mService.getBatteryLevel() + "%");
+                    }
+
+                    if (PreferencesUtil.shouldUseRoot(context) && status != null &&
+                            status.status == Type.ATTEMPTING && !status.hasRoot) {
+                        mStatusTextView.append(" (no SuperSU)");
+                    }
+                    // simple indicator of root status, supersu root for wear is available at:
+                    // http://forum.xda-developers.com/attachment.php?attachmentid=3342605&d=1433157678
+                    // sha1: 00c2ccd6ff356fa5cf73124e978fc192af186d2d
+
+                }
+
+                updateAlarmSnoozeViews();
+            }
+        });
+
     }
 
     private void updateAlarmSnoozeViews() {
@@ -478,6 +504,9 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
 
     @Override
     public void onQuickSettingsChanged(String key, String value) {
-        if (mService != null) mService.sendData(WearableApi.SETTINGS, key, value, null);
+        WearService.pushSettingsNow();
+        if (mService != null) {
+            mService.sendData(WearableApi.SETTINGS, key, value, null);
+        }
     }
 }
