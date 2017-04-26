@@ -24,6 +24,7 @@ android {
         targetSdkVersion 22
         versionCode=5
         versionName="1.0.4"
+        applicationId = "com.pimpimmobile.librealarm"
     }
 
     lintOptions {
@@ -35,7 +36,7 @@ android {
 
 dependencies {
     compile 'com.android.support:recyclerview-v7:23.3.0'
-    compile 'com.google.android.gms:play-services-wearable:9.4.0'
+    compile 'com.google.android.gms:play-services-wearable:7.8.0'
     compile project(':shareddata')
     wearApp project(':Wearable')
     compile 'com.android.support:appcompat-v7:23.3.0'

@@ -35,7 +35,12 @@ public class libreAlarm extends Application {
         } catch (Exception e) {
             Log.d(TAG, "Exception enabling crashlytics");
         }
-        immortality(5000);
+
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+        PreferenceManager.setDefaultValues(this, R.xml.nightscout_preferences, true);
+        PreferenceManager.setDefaultValues(this, R.xml.xdrip_plus_preferences, true);
+
+        immortality(this, 5000);
     }
 
     public static Context getAppContext() {
