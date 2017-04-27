@@ -56,10 +56,13 @@ public class RootTools {
 
         String script_name = file_dir + "/powersave.sh";
         writeToFile(script_name, "echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho 0 >/sys/devices/system/cpu/cpu1/online\n");
+        //writeToFile(script_name, "echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\n\n");
 
         // restore cpu speed somewhat
         script_name = file_dir + "/performance.sh";
-        writeToFile(script_name, "echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho 1 >/sys/devices/system/cpu/cpu1/online\n");
+        // seems to crash sometimes waking up the second cpu so lets not do that
+        //writeToFile(script_name, "echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho 1 >/sys/devices/system/cpu/cpu1/online\n");
+        writeToFile(script_name, "echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\n\n");
 
 
         // disables the touch sense on the keypad by nuking the driver
@@ -78,7 +81,14 @@ public class RootTools {
                 "echo \"$b\"\n" +
                 "kill \"$b\"\n" +
                 "fi\n" +
+                "setprop ctl.stop key_vibrate\n" +
                 "\n");
+
+        // removes xdrip watchface if present
+        script_name = file_dir + "/uninstallxdrip.sh";
+        writeToFile(script_name, "pm uninstall com.eveningoutpost.xdrip\n"+
+                "\n");
+
 
         sScriptsCreated = true;
     }
@@ -160,6 +170,8 @@ public class RootTools {
             }
         }
 
+
+
         @Override
         public boolean handleMessage(Message msg) {
             boolean state = msg.what == 1;
@@ -177,6 +189,7 @@ public class RootTools {
 
                     for (int counter = 0; counter < 5; counter++) {
                         Log.i(TAG, "Trying to switch nfc " + (state ? "on" : "off"));
+                        // static version of this is duplicated below
                         final Process execute = Runtime.getRuntime().exec("su -c service call nfc " + (state ? "6" : "5")); // turn NFC on or off
                         if (showProcessOutput(execute) != null) {
                             Log.e(TAG, "Got error- retrying.." + counter);
@@ -192,6 +205,15 @@ public class RootTools {
                             final Process execute1 = Runtime.getRuntime().exec("su -c sh " + mContext.getFilesDir() + "/killtouch.sh");
                             if (DEBUG) showProcessOutput(execute1);
                         }
+
+                        if ((WearActivity.got_tag_data) && (PreferencesUtil.uninstallxDrip(mContext))) {
+                            if (JoH.quietratelimit("uninstall-xdrip", 60000)) {
+                                Log.d(TAG, "Attempting to uninstall xdrip");
+                                final Process execute1 = Runtime.getRuntime().exec("su -c sh " + mContext.getFilesDir() + "/uninstallxdrip.sh");
+                                if (DEBUG) showProcessOutput(execute1);
+                            }
+                        }
+
                         if (PreferencesUtil.slowCpu(mContext)) {
                             if (DEBUG) Log.d(TAG, "Switching to lower powersave cpu speed");
                             final Process execute2 = Runtime.getRuntime().exec("su -c sh " + mContext.getFilesDir() + "/powersave.sh");
@@ -212,6 +234,16 @@ public class RootTools {
 
             return true;
         }
+    }
+
+    public static Process swichNFCState(boolean state) {
+        Log.i(TAG, "Trying to switch nfc " + (state ? "on" : "off"));
+        try {
+            return Runtime.getRuntime().exec("su -c service call nfc " + (state ? "6" : "5"));
+        } catch (Exception e) {
+            Log.e(TAG,"Got exception changing nfc state: "+e);
+        }
+        return null;
     }
 
 }
