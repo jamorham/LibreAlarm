@@ -31,6 +31,10 @@ public class DataLayerListenerService extends WearableListenerService {
     @Override
     public void onCreate() {
         super.onCreate();
+        if (libreAlarm.noNFC()) {
+            Log.e(TAG, "Device has no NFC - exiting");
+            return;
+        }
         Log.i(TAG, "create");
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
@@ -63,6 +67,10 @@ public class DataLayerListenerService extends WearableListenerService {
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
+        if (libreAlarm.noNFC()) {
+            Log.e(TAG, "Device has no NFC - exiting");
+            return;
+        }
         for (DataEvent event : dataEvents) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 // Check the data path
@@ -99,6 +107,10 @@ public class DataLayerListenerService extends WearableListenerService {
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
+        if (libreAlarm.noNFC()) {
+            Log.e(TAG, "Device has no NFC - exiting");
+            return;
+        }
         handleMessage(mGoogleApiClient, messageEvent);
     }
 
@@ -106,9 +118,11 @@ public class DataLayerListenerService extends WearableListenerService {
         Log.i(TAG, "received message: " + messageEvent.getSourceNodeId() + ", command: " + messageEvent.getPath());
         switch (messageEvent.getPath()) {
             case WearableApi.TRIGGER_GLUCOSE: {
-                Intent i = new Intent(client.getContext(), WearActivity.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                client.getContext().startActivity(i);
+                if (JoH.ratelimit("trigger-glucose", 5)) {
+                    Intent i = new Intent(client.getContext(), WearActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    client.getContext().startActivity(i);
+                }
             }
             break;
             case WearableApi.CANCEL_ALARM: {
@@ -142,12 +156,14 @@ public class DataLayerListenerService extends WearableListenerService {
             }
             break;
             case WearableApi.GET_UPDATE: {
-                SimpleDatabase database = new SimpleDatabase(client.getContext());
-                for (ReadingData.TransferObject message : database.getMessages()) {
-                    WearableApi.sendMessage(client, WearableApi.GLUCOSE, new Gson().toJson(message), null);
+                if (JoH.ratelimit("get-update", 1)) {
+                    SimpleDatabase database = new SimpleDatabase(client.getContext());
+                    for (ReadingData.TransferObject message : database.getMessages()) {
+                        WearableApi.sendMessage(client, WearableApi.GLUCOSE, new Gson().toJson(message), null);
+                    }
+                    database.close();
+                    sendStatus(client);
                 }
-                database.close();
-                sendStatus(client);
             }
             break;
         }

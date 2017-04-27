@@ -51,6 +51,8 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
 
     public static final int MAX_ATTEMPTS = 5;
 
+    public static boolean got_tag_data = false; // have we ever received any tag data?
+
     private GoogleApiClient mGoogleApiClient;
 
     private NfcAdapter mNfcAdapter;
@@ -119,11 +121,17 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
     @Override
     public void onCreate(Bundle b) {
         super.onCreate(b);
+        if (libreAlarm.noNFC()) {
+            Log.e(TAG, "Device has no NFC!");
+            finish();
+        }
         Log.i(TAG, "onCreate()");
+
         if (getIntent().hasExtra(EXTRA_CANCEL_ALARM)) {
             finish();
             return;
         }
+
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN |
                         WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                         WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
@@ -132,14 +140,16 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
                         WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                         WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
         setContentView(R.layout.wear_activity);
 
-
-        PowerManager manager = (PowerManager) getSystemService(POWER_SERVICE);
+        final PowerManager manager = (PowerManager) getSystemService(POWER_SERVICE);
 
         if ((mWakeLock != null) && (mWakeLock.isHeld())) mWakeLock.release();
+
         mWakeLock = manager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "tag");
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "screen-wake-tag");
+
 
         mWakeLock.acquire(60000);
 
@@ -187,6 +197,16 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
 
 
             Log.d(TAG, "About to discover tag");
+
+                // extra test delay
+                try {
+                    // quick and very dirty
+                    Thread.sleep(2000);
+                } catch (Exception e) {
+                    //
+                }
+
+
             mTagDiscovered = false;
             mNfcAdapter.enableReaderMode(WearActivity.this, new NfcAdapter.ReaderCallback() {
                 @Override
@@ -404,6 +424,7 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
                     }
                 }
                 Log.d(TAG, "GOT TAG DATA!");
+                got_tag_data = true;
             } catch (Exception e) {
                 Log.i(TAG, e.toString());
                 return null;
