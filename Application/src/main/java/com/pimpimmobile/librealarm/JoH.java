@@ -20,7 +20,7 @@ import static android.content.Context.ALARM_SERVICE;
 
 public class JoH {
 
-    private static final boolean debug_wakelocks = true;
+    private static final boolean debug_wakelocks = false;
     private static final String TAG = "LibreAlarm-JoH";
 
     private static double benchmark_time = 0;

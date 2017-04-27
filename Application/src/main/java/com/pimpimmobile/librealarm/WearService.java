@@ -290,11 +290,13 @@ public class WearService extends Service implements DataApi.DataListener, Messag
     }
 
     public void start() {
+        Log.e(TAG, "Starting everything");
         WearableApi.sendMessage(mGoogleApiClient, WearableApi.START, "", mMessageListener);
         PreferencesUtil.setIsStartedPhone(this, true);
     }
 
     public void stop() {
+        Log.e(TAG, "Stopping everything");
         WearableApi.sendMessage(mGoogleApiClient, WearableApi.STOP, "", mMessageListener);
         PreferencesUtil.setIsStartedPhone(this, false);
     }
@@ -329,6 +331,7 @@ public class WearService extends Service implements DataApi.DataListener, Messag
             essential_settings.add(getString(R.string.pref_key_root));
             essential_settings.add(getString(R.string.pref_key_clock_speed));
             essential_settings.add(getString(R.string.pref_key_disable_touchscreen));
+            essential_settings.add(getString(R.string.pref_key_uninstall_xdrip));
         }
     }
 
@@ -408,9 +411,13 @@ public class WearService extends Service implements DataApi.DataListener, Messag
     public void onDestroy() {
         immortality(this, 0);
         if (!mResolvingError) {
-            Wearable.MessageApi.removeListener(mGoogleApiClient, this);
-            Wearable.DataApi.removeListener(mGoogleApiClient, this);
-            mGoogleApiClient.disconnect();
+            try {
+                Wearable.MessageApi.removeListener(mGoogleApiClient, this);
+                Wearable.DataApi.removeListener(mGoogleApiClient, this);
+                mGoogleApiClient.disconnect();
+            } catch (NullPointerException e) {
+                Log.e(TAG, "Got null pointer in onDestroy: " + e);
+            }
             stopAlarm();
         }
 

@@ -390,6 +390,10 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
                         case ATTEMPTING:
                         case ATTENPT_FAILED:
                         case WAITING:
+                            if (!PreferencesUtil.getIsStartedPhone(getApplicationContext())) {
+                                Log.e(TAG, "Marking as started when previously wasn't");
+                                PreferencesUtil.setIsStartedPhone(getApplicationContext(), true);
+                            }
                             mActionButton.setText(R.string.button_stop);
                             mActionButton.setVisibility(View.VISIBLE);
                             mTriggerGlucoseButton.setVisibility(View.VISIBLE);
