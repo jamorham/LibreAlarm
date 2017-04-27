@@ -94,7 +94,8 @@ public class SimpleDatabase extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    }
 
     public void setListener(DatabaseListener listener) {
         mListener = listener;
@@ -142,37 +143,44 @@ public class SimpleDatabase extends SQLiteOpenHelper {
 
     private List<PredictionData> getPredictions(String selection, String[] selectionArgs) {
         List<PredictionData> prediction = new ArrayList<>();
-        SQLiteDatabase database = getReadableDatabase();
-        Cursor c = database.query(TABLE_PREDICTIONS, null, selection, selectionArgs, null, null, null);
-        if (c != null) {
-            if (c.moveToFirst()) {
-                int idIndex = c.getColumnIndex(Prediction.ID);
-                int glucoseIndex = c.getColumnIndex(Prediction.GLUCOSE);
-                int realDateIndex = c.getColumnIndex(Prediction.REAL_DATE_MS);
-                int sensorIdIndex = c.getColumnIndex(Prediction.SENSOR_ID);
-                int sensorTimeIndex = c.getColumnIndex(Prediction.SENSOR_TIME);
-                int confidenceIndex = c.getColumnIndex(Prediction.CONFIDENCE);
-                int predictionIndex = c.getColumnIndex(Prediction.PREDICTION);
-                int attemptIndex = c.getColumnIndex(Prediction.ATTEMPT);
-                int errorIndex = c.getColumnIndex(Prediction.ERROR_CODE);
-                while (!c.isAfterLast()) {
-                    PredictionData data = new PredictionData();
-                    data.phoneDatabaseId = c.getLong(idIndex);
-                    data.glucoseLevel = c.getInt(glucoseIndex);
-                    data.realDate = c.getLong(realDateIndex);
-                    data.sensorId = c.getString(sensorIdIndex);
-                    data.sensorTime = c.getLong(sensorTimeIndex);
-                    data.confidence = c.getFloat(confidenceIndex);
-                    data.trend = c.getFloat(predictionIndex);
-                    data.attempt = c.getInt(attemptIndex);
-                    data.errorCode = PredictionData.Result.values()[c.getInt(errorIndex)];
-                    prediction.add(data);
-                    c.moveToNext();
+        try {
+            SQLiteDatabase database = getReadableDatabase();
+            Cursor c = database.query(TABLE_PREDICTIONS, null, selection, selectionArgs, null, null, null);
+            if (c != null) {
+                if (c.moveToFirst()) {
+                    int idIndex = c.getColumnIndex(Prediction.ID);
+                    int glucoseIndex = c.getColumnIndex(Prediction.GLUCOSE);
+                    int realDateIndex = c.getColumnIndex(Prediction.REAL_DATE_MS);
+                    int sensorIdIndex = c.getColumnIndex(Prediction.SENSOR_ID);
+                    int sensorTimeIndex = c.getColumnIndex(Prediction.SENSOR_TIME);
+                    int confidenceIndex = c.getColumnIndex(Prediction.CONFIDENCE);
+                    int predictionIndex = c.getColumnIndex(Prediction.PREDICTION);
+                    int attemptIndex = c.getColumnIndex(Prediction.ATTEMPT);
+                    int errorIndex = c.getColumnIndex(Prediction.ERROR_CODE);
+                    while (!c.isAfterLast()) {
+                        PredictionData data = new PredictionData();
+                        data.phoneDatabaseId = c.getLong(idIndex);
+                        data.glucoseLevel = c.getInt(glucoseIndex);
+                        data.realDate = c.getLong(realDateIndex);
+                        data.sensorId = c.getString(sensorIdIndex);
+                        data.sensorTime = c.getLong(sensorTimeIndex);
+                        data.confidence = c.getFloat(confidenceIndex);
+                        data.trend = c.getFloat(predictionIndex);
+                        data.attempt = c.getInt(attemptIndex);
+                        data.errorCode = PredictionData.Result.values()[c.getInt(errorIndex)];
+                        prediction.add(data);
+                        c.moveToNext();
+                    }
                 }
+                c.close();
             }
-            c.close();
+            Collections.reverse(prediction);
+        } catch (android.database.sqlite.SQLiteDatabaseLockedException e) {
+            Log.e(TAG, "Database appears locked!");
+            if (JoH.quietratelimit("database-locked", 120)) {
+                JoH.static_toast_long("LibreAlarm database appears jammed!");
+            }
         }
-        Collections.reverse(prediction);
         return prediction;
     }
 
@@ -187,7 +195,7 @@ public class SimpleDatabase extends SQLiteOpenHelper {
         for (PredictionData data : list) {
             ContentValues values = new ContentValues();
             values.put(Prediction.NIGHTSCOUT_SYNC, 1);
-            database.update(TABLE_PREDICTIONS, values, Prediction.ID + "=?", new String[] {String.valueOf(data.phoneDatabaseId)});
+            database.update(TABLE_PREDICTIONS, values, Prediction.ID + "=?", new String[]{String.valueOf(data.phoneDatabaseId)});
         }
         database.setTransactionSuccessful();
         database.endTransaction();
@@ -197,7 +205,7 @@ public class SimpleDatabase extends SQLiteOpenHelper {
         List<GlucoseData> trend = new ArrayList<>();
         SQLiteDatabase database = getReadableDatabase();
         Cursor c = database.query(TABLE_TREND, null, Glucose.OWNER_ID + "=?",
-                new String[] { Long.toString(predictionId) }, null, null, null);
+                new String[]{Long.toString(predictionId)}, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
                 int glucoseIndex = c.getColumnIndex(Glucose.GLUCOSE);

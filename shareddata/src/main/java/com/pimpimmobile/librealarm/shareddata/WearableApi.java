@@ -66,6 +66,10 @@ public class WearableApi {
 
     public static void sendMessage(final GoogleApiClient client, final String command,
             final byte[] message, final ResultCallback<MessageApi.SendMessageResult> listener) {
+        if (client == null) {
+            Log.e(TAG, "Google client null in sendMessage");
+            return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
