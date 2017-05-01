@@ -16,10 +16,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class SimpleDatabase extends SQLiteOpenHelper {
 
     private static final String TAG = "LibreAlarm" + SimpleDatabase.class.getSimpleName();
+
+    private static final ReentrantReadWriteLock read_write_lock = new ReentrantReadWriteLock();
+    private static final Lock r = read_write_lock.readLock();
+    private static final Lock w = read_write_lock.writeLock();
 
     private DatabaseListener mListener;
 
@@ -102,47 +108,53 @@ public class SimpleDatabase extends SQLiteOpenHelper {
     }
 
     public void storeReading(ReadingData data) {
-        SQLiteDatabase database = getWritableDatabase();
-        database.beginTransaction();
+        w.lock();
+        try {
+            SQLiteDatabase database = getWritableDatabase();
+            database.beginTransaction();
 
-        // Checks for duplicates.
-        if (data.prediction.glucoseLevel != -1) {
-            Cursor c = null;
-            try {
-                c = database.query(TABLE_PREDICTIONS, null,
-                        Glucose.SENSOR_ID + "=? AND ?=" + Glucose.SENSOR_TIME,
-                        new String[]{data.prediction.sensorId, String.valueOf(data.prediction.sensorTime)},
-                        null, null, null);
-                if (c.getCount() > 0) {
-                    Log.i(TAG, "Data already exist, sensor id: " + data.prediction.sensorId +
-                            ", sensor time: " + data.prediction.sensorTime);
-                    return;
+            // Checks for duplicates.
+            if (data.prediction.glucoseLevel != -1) {
+                Cursor c = null;
+                try {
+                    c = database.query(TABLE_PREDICTIONS, null,
+                            Glucose.SENSOR_ID + "=? AND ?=" + Glucose.SENSOR_TIME,
+                            new String[]{data.prediction.sensorId, String.valueOf(data.prediction.sensorTime)},
+                            null, null, null);
+                    if (c.getCount() > 0) {
+                        Log.i(TAG, "Data already exist, sensor id: " + data.prediction.sensorId +
+                                ", sensor time: " + data.prediction.sensorTime);
+                        return;
+                    }
+                } finally {
+                    if (c != null) c.close();
                 }
-            } finally {
-                if (c != null) c.close();
             }
-        }
 
-        ContentValues predictionValues = getGlucoseContentValues(data.prediction, -1);
-        long predictionId = database.insert(TABLE_PREDICTIONS, null, predictionValues);
-        for (Object trend : data.trend) {
-            database.insert(TABLE_TREND, null, getGlucoseContentValues((GlucoseData) trend, predictionId));
-        }
-        for (Object history : data.history) {
-            database.insert(TABLE_HISTORY, null, getGlucoseContentValues((GlucoseData) history, predictionId));
-        }
+            ContentValues predictionValues = getGlucoseContentValues(data.prediction, -1);
+            long predictionId = database.insert(TABLE_PREDICTIONS, null, predictionValues);
+            for (Object trend : data.trend) {
+                database.insert(TABLE_TREND, null, getGlucoseContentValues((GlucoseData) trend, predictionId));
+            }
+            for (Object history : data.history) {
+                database.insert(TABLE_HISTORY, null, getGlucoseContentValues((GlucoseData) history, predictionId));
+            }
 
-        database.setTransactionSuccessful();
-        database.endTransaction();
-        if (mListener != null) mListener.onDatabaseChange();
+            database.setTransactionSuccessful();
+            database.endTransaction();
+            if (mListener != null) mListener.onDatabaseChange();
+        } finally {
+            w.unlock();
+        }
     }
 
-    public List<PredictionData> getPredictions() {
+    public synchronized List<PredictionData> getPredictions() {
         return getPredictions(null, null);
     }
 
     private List<PredictionData> getPredictions(String selection, String[] selectionArgs) {
         List<PredictionData> prediction = new ArrayList<>();
+        r.lock();
         try {
             SQLiteDatabase database = getReadableDatabase();
             Cursor c = database.query(TABLE_PREDICTIONS, null, selection, selectionArgs, null, null, null);
@@ -180,60 +192,72 @@ public class SimpleDatabase extends SQLiteOpenHelper {
             if (JoH.quietratelimit("database-locked", 120)) {
                 JoH.static_toast_long("LibreAlarm database appears jammed!");
             }
+        } finally {
+            r.unlock();
         }
         return prediction;
     }
 
 
-    public List<PredictionData> getNsSyncData() {
+    public synchronized List<PredictionData> getNsSyncData() {
         return getPredictions(Prediction.NIGHTSCOUT_SYNC + "=0 AND -1 !=" + Prediction.GLUCOSE, null);
     }
 
     public void setNsSynced(List<PredictionData> list) {
-        SQLiteDatabase database = getWritableDatabase();
-        database.beginTransaction();
-        for (PredictionData data : list) {
-            ContentValues values = new ContentValues();
-            values.put(Prediction.NIGHTSCOUT_SYNC, 1);
-            database.update(TABLE_PREDICTIONS, values, Prediction.ID + "=?", new String[]{String.valueOf(data.phoneDatabaseId)});
+        w.lock();
+        try {
+            SQLiteDatabase database = getWritableDatabase();
+            database.beginTransaction();
+            for (PredictionData data : list) {
+                ContentValues values = new ContentValues();
+                values.put(Prediction.NIGHTSCOUT_SYNC, 1);
+                database.update(TABLE_PREDICTIONS, values, Prediction.ID + "=?", new String[]{String.valueOf(data.phoneDatabaseId)});
+            }
+            database.setTransactionSuccessful();
+            database.endTransaction();
+        } finally {
+            w.unlock();
         }
-        database.setTransactionSuccessful();
-        database.endTransaction();
     }
 
-    public List<GlucoseData> getTrend(long predictionId) {
-        List<GlucoseData> trend = new ArrayList<>();
-        SQLiteDatabase database = getReadableDatabase();
-        Cursor c = database.query(TABLE_TREND, null, Glucose.OWNER_ID + "=?",
-                new String[]{Long.toString(predictionId)}, null, null, null);
-        if (c != null) {
-            if (c.moveToFirst()) {
-                int glucoseIndex = c.getColumnIndex(Glucose.GLUCOSE);
-                int realDateIndex = c.getColumnIndex(Glucose.REAL_DATE_MS);
-                int sensorIdIndex = c.getColumnIndex(Glucose.SENSOR_ID);
-                int sensorTimeIndex = c.getColumnIndex(Glucose.SENSOR_TIME);
-                while (!c.isAfterLast()) {
-                    GlucoseData data = new GlucoseData();
-                    data.glucoseLevel = c.getInt(glucoseIndex);
-                    data.realDate = c.getLong(realDateIndex);
-                    data.sensorId = c.getString(sensorIdIndex);
-                    data.sensorTime = c.getLong(sensorTimeIndex);
-                    trend.add(data);
-                    c.moveToNext();
+    public synchronized List<GlucoseData> getTrend(long predictionId) {
+        r.lock();
+        try {
+            List<GlucoseData> trend = new ArrayList<>();
+            SQLiteDatabase database = getReadableDatabase();
+            Cursor c = database.query(TABLE_TREND, null, Glucose.OWNER_ID + "=?",
+                    new String[]{Long.toString(predictionId)}, null, null, null);
+            if (c != null) {
+                if (c.moveToFirst()) {
+                    int glucoseIndex = c.getColumnIndex(Glucose.GLUCOSE);
+                    int realDateIndex = c.getColumnIndex(Glucose.REAL_DATE_MS);
+                    int sensorIdIndex = c.getColumnIndex(Glucose.SENSOR_ID);
+                    int sensorTimeIndex = c.getColumnIndex(Glucose.SENSOR_TIME);
+                    while (!c.isAfterLast()) {
+                        GlucoseData data = new GlucoseData();
+                        data.glucoseLevel = c.getInt(glucoseIndex);
+                        data.realDate = c.getLong(realDateIndex);
+                        data.sensorId = c.getString(sensorIdIndex);
+                        data.sensorTime = c.getLong(sensorTimeIndex);
+                        trend.add(data);
+                        c.moveToNext();
+                    }
                 }
+                c.close();
             }
-            c.close();
+            Collections.sort(trend, new Comparator<GlucoseData>() {
+                @Override
+                public int compare(GlucoseData lhs, GlucoseData rhs) {
+                    return (int) (rhs.sensorTime - lhs.sensorTime);
+                }
+            });
+            return trend;
+        } finally {
+            r.unlock();
         }
-        Collections.sort(trend, new Comparator<GlucoseData>() {
-            @Override
-            public int compare(GlucoseData lhs, GlucoseData rhs) {
-                return (int) (rhs.sensorTime - lhs.sensorTime);
-            }
-        });
-        return trend;
     }
 
-    private ContentValues getGlucoseContentValues(GlucoseData g, long ownerId) {
+    private synchronized ContentValues getGlucoseContentValues(GlucoseData g, long ownerId) {
         ContentValues values = new ContentValues();
         values.put(Glucose.GLUCOSE, g.glucoseLevel);
         values.put(Glucose.REAL_DATE_MS, g.realDate);
