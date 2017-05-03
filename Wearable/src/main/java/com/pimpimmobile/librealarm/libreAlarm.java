@@ -16,11 +16,11 @@ public class libreAlarm extends Application {
 
     private static final String TAG = "libreAlarm";
     public static Boolean hasNFC;
-    // private static Context context;
+    private static Context context;
 
     @Override
     public void onCreate() {
-        //   context = getApplicationContext();
+        context = getApplicationContext();
         Log.d(TAG, "APPLICATION CREATED !!!");
         super.onCreate();
         // detect if this device has nfc
@@ -35,8 +35,8 @@ public class libreAlarm extends Application {
         return hasNFC != null && !hasNFC;
     }
 
-    //   public static Context getAppContext() {
-    //      return context;
-    //  }
+    public static Context getAppContext() {
+        return context;
+    }
 
 }

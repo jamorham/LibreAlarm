@@ -73,6 +73,8 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
     private View mSnoozeHighParent;
     private boolean mIsFirstStartup;
 
+    public static boolean activityVisible = false;
+
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -270,6 +272,7 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
     @Override
     protected void onResume() {
         super.onResume();
+        activityVisible = true;
         if (mService != null) onDataUpdated();
         if (JoH.ratelimit("battery-optimize", 5)) {
             checkBatteryOptimization();
@@ -311,6 +314,11 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
         mDrawerToggle.syncState();
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        activityVisible = false;
     }
 
     @Override
