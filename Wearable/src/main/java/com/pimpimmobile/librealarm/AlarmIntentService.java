@@ -17,11 +17,12 @@ public class AlarmIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.i(TAG, "AlarmIntentService");
-        Intent i = new Intent(this, WearActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+      //  Intent i = new Intent(this, WearActivity.class);
+      //  i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         // If activity doesn't start for some reason, try again in 10 seconds.
         if (PreferencesUtil.getIsStarted(this)) AlarmReceiver.post(getBaseContext(), 10000);
-        startActivity(i);
+      //  startActivity(i);
+        WearIntentService.startActionDefault(this);
 
         AlarmReceiver.completeWakefulIntent(intent);
     }

@@ -83,6 +83,8 @@ public class WearService extends Service implements DataApi.DataListener, Messag
 
     private static ArrayList<String> essential_settings;
 
+    private static ArrayList<String> essential_string_settings;
+
     private static boolean push_settings_now = false;
 
     private boolean mNotificationShowing = false;
@@ -199,9 +201,12 @@ public class WearService extends Service implements DataApi.DataListener, Messag
                                     push_settings_now = false;
                                     Log.d(TAG, "Sending essential settings!");
                                     final HashMap<String, String> map = new HashMap<>();
-                                    for (String key : essential_settings)
-                                        // only handles booleans at the moment
+                                    for (String key : essential_settings) {
                                         map.put(key, PreferencesUtil.getBoolean(context, key, false) ? PreferencesUtil.TRUE_MARKER : PreferencesUtil.FALSE_MARKER);
+                                    }
+                                    for (String key : essential_string_settings) {
+                                        map.put(key, PreferencesUtil.getString(context, key, ""));
+                                    }
                                     sendData(WearableApi.SETTINGS, map, null);
                                 }
                             }
@@ -332,6 +337,9 @@ public class WearService extends Service implements DataApi.DataListener, Messag
             essential_settings.add(getString(R.string.pref_key_clock_speed));
             essential_settings.add(getString(R.string.pref_key_disable_touchscreen));
             essential_settings.add(getString(R.string.pref_key_uninstall_xdrip));
+
+            essential_string_settings = new ArrayList<>();
+            essential_string_settings.add(getString(R.string.pref_key_glucose_interval));
         }
     }
 
@@ -629,6 +637,12 @@ public class WearService extends Service implements DataApi.DataListener, Messag
             if (!isConnected()) {
                 if (JoH.ratelimit("poll-update", 15)) {
                     getUpdate();
+                    JoH.runOnUiThreadDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if ((MainActivity.activityVisible) && (!isConnected())) getUpdate();
+                        }
+                    }, 16000);
                 }
             }
             return isConnected() ? "Not connected" : "Wear not connected";

@@ -40,10 +40,12 @@ import com.pimpimmobile.librealarm.shareddata.WearableApi;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static com.pimpimmobile.librealarm.WearIntentService.tryToAddListener;
+import static com.pimpimmobile.librealarm.WearIntentService.tryToRemoveListener;
 import static com.pimpimmobile.librealarm.shareddata.AlgorithmUtil.DEBUG;
 
-public class WearActivity extends Activity implements ConnectionCallbacks,
-        OnConnectionFailedListener, MessageApi.MessageListener {
+public class WearActivity extends Activity
+       implements ConnectionCallbacks, OnConnectionFailedListener, MessageApi.MessageListener {
 
     private static final String TAG = "LibreAlarm" + WearActivity.class.getSimpleName();
 
@@ -55,7 +57,7 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
 
     private GoogleApiClient mGoogleApiClient;
 
-    private NfcAdapter mNfcAdapter;
+    public static NfcAdapter mNfcAdapter;
 
     private PowerManager.WakeLock mWakeLock;
 
@@ -64,8 +66,6 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
     private Vibrator mVibrator;
 
     private boolean mTagDiscovered = false;
-
-    private RootTools mRootTools;
 
     private ReadingData mResult = new ReadingData(PredictionData.Result.ERROR_NO_NFC);
 
@@ -94,6 +94,7 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
     private Runnable mStopActivityRunnable = new Runnable() {
         @Override
         public void run() {
+            Log.e(TAG, "mStopActivityRunnable executed!");
             int retries = PreferencesUtil.getRetries(WearActivity.this);
             mFinishAfterSentMessages = true;
             if (retries >= MAX_ATTEMPTS) {
@@ -109,7 +110,7 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
                 sendStatusUpdate(Type.ATTENPT_FAILED);
                 PreferencesUtil.setRetries(WearActivity.this, ++retries);
             }
-            if (mRootTools != null) mRootTools.executeScripts(false);
+            RootTools.executeScripts(false);
         }
     };
 
@@ -131,6 +132,30 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
             finish();
             return;
         }
+
+        BatteryManager bm = (BatteryManager)getSystemService(BATTERY_SERVICE);
+        mBatteryLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+
+
+        mGoogleApiClient = WearIntentService.mGoogleApiClient; // this probably needs refactoring
+
+        // TODO check we don't stay awake if wear is disconnected after read
+        // TODO check failed connection event callback
+        tryToAddListener(this);
+    /*    if ((mGoogleApiClient == null) || (!mGoogleApiClient.isConnected())) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(Wearable.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+
+            mGoogleApiClient.connect();
+            Log.d(TAG, "Attempting to connect to google api");
+    } else {
+        Log.d(TAG,"Already connected google api");
+        onConnected(null);
+    }*/
+
 
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN |
                         WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
@@ -156,24 +181,8 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
         // If attempt fails for some reason, retry in 20 seconds.
         if (PreferencesUtil.getIsStarted(this)) AlarmReceiver.post(this, 20000);
 
-        if (PreferencesUtil.shouldUseRoot(this)) {
-            Log.d(TAG,"Using ROOT options!");
-            mRootTools = new RootTools(this);
-            mRootTools.executeScripts(true); // turn it on
-        } else {
-            Log.d(TAG,"Not using root options");
-        }
 
-        BatteryManager bm = (BatteryManager)getSystemService(BATTERY_SERVICE);
-        mBatteryLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-
-        mGoogleApiClient.connect();
         Log.d(TAG, "NFC Initialization");
         NfcManager nfcManager =
                 (NfcManager) WearActivity.this.getSystemService(Context.NFC_SERVICE);
@@ -195,17 +204,15 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
                     counter++;
                 }
 
-
-            Log.d(TAG, "About to discover tag");
-
+                Log.d(TAG, "Activity Extra delay wait");
                 // extra test delay
                 try {
                     // quick and very dirty
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                 } catch (Exception e) {
                     //
                 }
-
+            Log.d(TAG, "About to discover tag");
 
             mTagDiscovered = false;
             mNfcAdapter.enableReaderMode(WearActivity.this, new NfcAdapter.ReaderCallback() {
@@ -246,15 +253,18 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
         Log.i(TAG, "onStop");
         if (mHandler != null) mHandler.removeCallbacksAndMessages(null);
 
+        //if (mRootTools != null) mRootTools.executeScripts(false, 0);
+        RootTools.executeScripts(false, 0);
         if (mVibrator != null) mVibrator.cancel();
         if (mNfcAdapter != null) {
             mNfcAdapter.disableReaderMode(this);
         }
-        if ((mGoogleApiClient != null) && (mGoogleApiClient.isConnected())) {
+        tryToRemoveListener(this);
+       /* if ((mGoogleApiClient != null) && (mGoogleApiClient.isConnected())) {
             Wearable.MessageApi.removeListener(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
-        }
-        if (mRootTools != null) mRootTools.executeScripts(false, 15000);
+        }*/
+       // if (mRootTools != null) mRootTools.executeScripts(false, 15000);
         if ((mWakeLock != null) && (mWakeLock.isHeld())) mWakeLock.release();
         finish();
         super.onStop();
@@ -262,13 +272,13 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
 
     private void setNextAlarm() {
         if (PreferencesUtil.getIsStarted(this)) {
-            AlarmReceiver.post(this, Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(this)) * 60000); // 60000 ms = 1 minute
+            AlarmReceiver.post(this, AlarmReceiver.getNextPeriodDelay(this));
         }
     }
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "is connected!!");
+        Log.i(TAG, "google api is connected!!");
         Wearable.MessageApi.addListener(mGoogleApiClient, this);
         sendStatusUpdate(Type.ATTEMPTING);
     }
@@ -276,15 +286,15 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
     private void sendAlarmStatusUpdate(Type type, int value, AlgorithmUtil.TrendArrow trendArrow) {
         int attempt = PreferencesUtil.getRetries(this);
         Status status = new Status(type, attempt, WearActivity.MAX_ATTEMPTS,
-                AlarmReceiver.getNextCheck(mGoogleApiClient.getContext()), value, trendArrow);
+                AlarmReceiver.getNextCheck(this), value, trendArrow);
         sendStatusUpdate(type, status);
     }
 
     private void sendStatusUpdate(Type type) {
         int attempt = PreferencesUtil.getRetries(this);
         Status status = new Status(type, attempt, WearActivity.MAX_ATTEMPTS,
-                AlarmReceiver.getNextCheck(mGoogleApiClient.getContext()), mBatteryLevel,
-                mRootTools != null && mRootTools.isHasRoot());
+                AlarmReceiver.getNextCheck(this), mBatteryLevel,
+                RootTools.isHasRoot());
         sendStatusUpdate(type, status);
     }
 
@@ -340,15 +350,21 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(TAG, "onConnectionFailed(): Failed to connect, with result: " + connectionResult);
+        if (JoH.ratelimit("onconnectionfailed", 15)) {
+            Log.d(TAG, "Reconnecting..");
+            mGoogleApiClient.connect();
+        }
     }
 
     private class NfcVReaderTask extends AsyncTask<Tag, Void, Tag> {
 
-        private byte[] data = new byte[360];
+        private final byte[] data = new byte[360];
 
         @Override
         protected void onPostExecute(Tag tag) {
             try {
+                Log.d(TAG, "Early release of full wakelock");
+                if (mWakeLock.isHeld()) mWakeLock.release();
                 if (DEBUG) Log.d(TAG, "NFC Reader task done - disabling read mode");
                 mNfcAdapter.disableReaderMode(WearActivity.this);
                 if (DEBUG) Log.d(TAG, "NFC read mode disabled");
@@ -374,11 +390,7 @@ public class WearActivity extends Activity implements ConnectionCallbacks,
                 Log.e(TAG, "Illegal state exception in postExecute: " + e);
 
             } finally {
-                if (mRootTools != null) {
-                    mRootTools.cancelScripts();
-                    mRootTools.executeScripts(false); // turn it off
-                    mRootTools = null;
-                }
+                    RootTools.executeScripts(false); // turn it off
             }
         }
 

@@ -26,7 +26,7 @@ public class DataLayerListenerService extends WearableListenerService {
 
     private static final String TAG = "LibreAlarmData";
 
-    GoogleApiClient mGoogleApiClient;
+    static public GoogleApiClient mGoogleApiClient;
 
     @Override
     public void onCreate() {
@@ -45,7 +45,8 @@ public class DataLayerListenerService extends WearableListenerService {
             AlarmReceiver.post(this, 120000);
         } else if (System.currentTimeMillis() > AlarmReceiver.getNextCheck(this) &&
                 PreferencesUtil.getIsStarted(this)) {
-            startActivity(new Intent(this, WearActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+           // startActivity(new Intent(this, WearActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            WearIntentService.startActionDefault(this);
         }
     }
 
@@ -119,9 +120,10 @@ public class DataLayerListenerService extends WearableListenerService {
         switch (messageEvent.getPath()) {
             case WearableApi.TRIGGER_GLUCOSE: {
                 if (JoH.ratelimit("trigger-glucose", 5)) {
-                    Intent i = new Intent(client.getContext(), WearActivity.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    client.getContext().startActivity(i);
+                  //  Intent i = new Intent(client.getContext(), WearActivity.class);
+                  //  i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                  //  client.getContext().startActivity(i);
+                    WearIntentService.startActionDefault(client.getContext());
                 }
             }
             break;

@@ -2,6 +2,7 @@ package com.pimpimmobile.librealarm.shareddata;
 
 import android.content.Context;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.google.gson.JsonObject;
 
@@ -15,6 +16,8 @@ public class PreferencesUtil {
 
     public static final String TRUE_MARKER = "___TRUE___";
     public static final String FALSE_MARKER = "___FALSE___";
+
+    private static final String TAG = "LibrePrefUtil";
 
     // Used on phone
     public static Boolean isNsRestEnabled(Context context) {
