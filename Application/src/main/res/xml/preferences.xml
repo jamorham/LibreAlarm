@@ -62,8 +62,8 @@
             android:defaultValue="false" />
         <CheckBoxPreference
             android:key="@string/pref_key_uninstall_xdrip"
-            android:title="Uninstall xDrip watchface"
-            android:summary="Remove the xDrip watchface from the collector watch"
+            android:title="@string/uninstall_xdrip_watchface"
+            android:summary="@string/remove_the_xdrip_watchface_from_the_collector_watch"
             android:dependency="@string/pref_key_root"
             android:defaultValue="false" />
     </PreferenceCategory>

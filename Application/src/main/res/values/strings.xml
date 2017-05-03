@@ -182,5 +182,7 @@
 
     <!-- Title for setting to enable root -->
     <string name="pref_key_root_summary">Requires rooted watch</string>
+    <string name="uninstall_xdrip_watchface">Uninstall xDrip watchface</string>
+    <string name="remove_the_xdrip_watchface_from_the_collector_watch">Remove the xDrip watchface from the collector watch</string>
 
 </resources>
