@@ -12,6 +12,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
+import com.pimpimmobile.librealarm.shareddata.PreferencesUtil;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -28,6 +30,21 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         Intent i = new Intent(context, AlarmIntentService.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startWakefulService(context, i);
+    }
+
+    public static long getNextPeriodDelay(Context context) {
+        long period_ms;
+        try {
+            period_ms = Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(context)) * 60000;
+        } catch (Exception e) {
+            period_ms = 5 * 60000;
+        }
+
+        period_ms = Math.max(60000, period_ms);
+        final long now = JoH.tsl();
+        final long timestamp_next = ((now / period_ms) * period_ms) + period_ms;
+        final long delay = Math.max((timestamp_next - now) - (5 * 1000), 14999);
+        return delay;
     }
 
     public static void post(Context context, long delay) {
