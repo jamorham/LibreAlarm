@@ -80,7 +80,7 @@ public class AlgorithmUtil {
         long sensorStartTime = watchTime - sensorTime * MINUTE;
 
         ArrayList<GlucoseData> historyList = new ArrayList<>();
-
+        // TODO checksum!
 
         // loads history values (ring buffer, starting at index_trent. byte 124-315)
         for (int index = 0; index < 32; index++) {

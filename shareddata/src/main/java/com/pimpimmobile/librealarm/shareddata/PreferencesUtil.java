@@ -101,6 +101,10 @@ public class PreferencesUtil {
         return getBoolean(context, context.getString(R.string.pref_key_disable_touchscreen), false);
     }
 
+    public static Boolean toggleNFC(Context context) {
+        return getBoolean(context, context.getString(R.string.pref_key_switch_nfc), false);
+    }
+
     public static Boolean uninstallxDrip(Context context) {
         return getBoolean(context, context.getString(R.string.pref_key_uninstall_xdrip), false);
     }

@@ -336,6 +336,7 @@ public class WearService extends Service implements DataApi.DataListener, Messag
             essential_settings.add(getString(R.string.pref_key_root));
             essential_settings.add(getString(R.string.pref_key_clock_speed));
             essential_settings.add(getString(R.string.pref_key_disable_touchscreen));
+            essential_settings.add(getString(R.string.pref_key_switch_nfc));
             essential_settings.add(getString(R.string.pref_key_uninstall_xdrip));
 
             essential_string_settings = new ArrayList<>();

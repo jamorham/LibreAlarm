@@ -49,6 +49,12 @@
             android:summary="@string/pref_key_root_summary"
             android:defaultValue="false" />
         <CheckBoxPreference
+            android:key="@string/pref_key_switch_nfc"
+            android:title="@string/toggle_nfc"
+            android:summary="@string/try_to_turn_nfc_off_when_not_in_use"
+            android:dependency="@string/pref_key_root"
+            android:defaultValue="false" />
+        <CheckBoxPreference
             android:key="@string/pref_key_clock_speed"
             android:title="@string/pref_key_clock_speed_title"
             android:summary="@string/pref_key_clock_speed_summary"

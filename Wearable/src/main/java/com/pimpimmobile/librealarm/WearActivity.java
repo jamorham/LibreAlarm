@@ -55,6 +55,10 @@ public class WearActivity extends Activity
 
     public static boolean got_tag_data = false; // have we ever received any tag data?
 
+    public static int successes = 0;
+
+    public static int failures = 0;
+
     private GoogleApiClient mGoogleApiClient;
 
     public static NfcAdapter mNfcAdapter;
@@ -94,7 +98,8 @@ public class WearActivity extends Activity
     private Runnable mStopActivityRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.e(TAG, "mStopActivityRunnable executed!");
+            Log.e(TAG, "mStopActivityRunnable executed! TIMED OUT");
+            failures++;
             int retries = PreferencesUtil.getRetries(WearActivity.this);
             mFinishAfterSentMessages = true;
             if (retries >= MAX_ATTEMPTS) {
@@ -265,7 +270,12 @@ public class WearActivity extends Activity
             mGoogleApiClient.disconnect();
         }*/
        // if (mRootTools != null) mRootTools.executeScripts(false, 15000);
-        if ((mWakeLock != null) && (mWakeLock.isHeld())) mWakeLock.release();
+        try {
+            Log.d(TAG, "Successes: " + successes + "  Failures: " + failures + "  Success rate:" + ((double) ((successes - failures)) / successes) * 100);
+        } catch (Exception e) {
+            //
+        }
+            if ((mWakeLock != null) && (mWakeLock.isHeld())) mWakeLock.release();
         finish();
         super.onStop();
     }
@@ -368,7 +378,12 @@ public class WearActivity extends Activity
                 if (DEBUG) Log.d(TAG, "NFC Reader task done - disabling read mode");
                 mNfcAdapter.disableReaderMode(WearActivity.this);
                 if (DEBUG) Log.d(TAG, "NFC read mode disabled");
-                if (tag == null) return;
+                if (tag == null) {
+                    failures++;
+                    return;
+                } else {
+                    successes++;
+                }
                 String tagId = bytesToHexString(tag.getId());
                 int attempt = PreferencesUtil.getRetries(WearActivity.this);
                 mResult = AlgorithmUtil.parseData(attempt, tagId, data);
