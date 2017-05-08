@@ -27,7 +27,7 @@ public class libreAlarm extends Application {
         final NfcManager nfcManager = (NfcManager) this.getSystemService(Context.NFC_SERVICE);
         hasNFC = nfcManager.getDefaultAdapter() != null;
         if (hasNFC && (PreferencesUtil.shouldUseRoot(getApplicationContext()))) {
-            RootTools.swichNFCState(false); // disable on start
+          if (PreferencesUtil.toggleNFC(getAppContext())) RootTools.swichNFCState(false); // disable on start
         }
     }
 

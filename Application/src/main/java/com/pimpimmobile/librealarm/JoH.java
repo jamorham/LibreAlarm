@@ -9,6 +9,8 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -136,6 +138,32 @@ public class JoH {
     {
         final Handler mainHandler = new Handler(libreAlarm.getAppContext().getMainLooper());
         mainHandler.removeCallbacks(theRunnable);
+    }
+
+    // qs = quick string conversion of double for printing
+    public static String qs(double x) {
+        return qs(x, 2);
+    }
+
+    public static String qs(double x, int digits) {
+
+        if (digits == -1) {
+            digits = 0;
+            if (((int) x != x)) {
+                digits++;
+                if ((((int) x * 10) / 10 != x)) {
+                    digits++;
+                    if ((((int) x * 100) / 100 != x)) digits++;
+                }
+            }
+        }
+
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setDecimalSeparator('.');
+        DecimalFormat df = new DecimalFormat("#", symbols);
+        df.setMaximumFractionDigits(digits);
+        df.setMinimumIntegerDigits(1);
+        return df.format(x);
     }
 
     public static void static_toast(final Context context, final String msg, final int length) {
