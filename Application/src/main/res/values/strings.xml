@@ -169,22 +169,26 @@
     <string name="pref_key_clock_speed_title">Slow down watch CPU</string>
 
     <!-- Summary for setting allowing the user to slow down the watch CPU to save battery -->
-    <string name="pref_key_clock_speed_summary">Run watch at slowest processing speed to save battery.</string>
+    <string name="pref_key_clock_speed_summary">Run watch at slowest processing speed to save battery. (Not recommended)</string>
 
     <!-- Title for setting allowing the user to disable the watch touchscreen to avoid accidental touches -->
     <string name="pref_key_disable_touchscreen_title">Completely disable watch touchscreen</string>
 
     <!-- Summary for setting allowing the user to disable the watch touchscreen to avoid accidental touches -->
-    <string name="pref_key_disable_touchscreen_summary">To re-enable touchscreen turn this off and hold watch button until it reboots</string>
+    <string name="pref_key_disable_touchscreen_summary">(Recommended) Use app reboot menu item or hold watch button to reverse</string>
 
     <!-- Title for setting to enable root -->
     <string name="pref_key_root_title">Enable root functionality</string>
 
     <!-- Title for setting to enable root -->
-    <string name="pref_key_root_summary">Requires rooted watch</string>
+    <string name="pref_key_root_summary">Requires rooted watch (Recommended)</string>
     <string name="uninstall_xdrip_watchface">Uninstall xDrip watchface</string>
     <string name="remove_the_xdrip_watchface_from_the_collector_watch">Remove the xDrip watchface from the collector watch</string>
     <string name="toggle_nfc">Toggle NFC</string>
-    <string name="try_to_turn_nfc_off_when_not_in_use">Try to turn NFC off when not in use</string>
+    <string name="try_to_turn_nfc_off_when_not_in_use">Try to turn NFC off when not in use (Not recommended)</string>
+    <string name="reboot_watch">Reboot watch (needs root)</string>
+    <string name="clear_statistics">Clear Statistics</string>
+    <string name="toggle_nfc_on_error">Toggle NFC on error</string>
+    <string name="turn_nfc_off_if_get_errors">Turn NFC off and on if we get read errors (Recommended)</string>
 
 </resources>
