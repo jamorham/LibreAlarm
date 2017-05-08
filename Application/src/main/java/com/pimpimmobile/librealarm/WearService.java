@@ -306,6 +306,16 @@ public class WearService extends Service implements DataApi.DataListener, Messag
         PreferencesUtil.setIsStartedPhone(this, false);
     }
 
+    public void reboot() {
+        Log.e(TAG, "Stopping everything");
+        WearableApi.sendMessage(mGoogleApiClient, WearableApi.REBOOT, "", mMessageListener);
+    }
+
+    public void clearstats() {
+        Log.e(TAG, "Stopping everything");
+        WearableApi.sendMessage(mGoogleApiClient, WearableApi.CLEAR_STATS, "", mMessageListener);
+    }
+
     public void getUpdate() {
         WearableApi.sendMessage(mGoogleApiClient, WearableApi.GET_UPDATE, "", mMessageListener);
     }
@@ -337,6 +347,7 @@ public class WearService extends Service implements DataApi.DataListener, Messag
             essential_settings.add(getString(R.string.pref_key_clock_speed));
             essential_settings.add(getString(R.string.pref_key_disable_touchscreen));
             essential_settings.add(getString(R.string.pref_key_switch_nfc));
+            essential_settings.add(getString(R.string.pref_key_switch_nfc_on_error));
             essential_settings.add(getString(R.string.pref_key_uninstall_xdrip));
 
             essential_string_settings = new ArrayList<>();
@@ -615,6 +626,19 @@ public class WearService extends Service implements DataApi.DataListener, Messag
             return 0;
         }
     }
+
+    public String getStatsString() {
+        try {
+            if ((mReadingStatus != null) && (mReadingStatus.successes > -1)) {
+                return "Successes: " + mReadingStatus.successes + "  Failures: " + mReadingStatus.failures + "  Success rate: " + JoH.qs(((double)(mReadingStatus.successes - mReadingStatus.failures)) / mReadingStatus.successes * 100, 1)+ "%";
+            } else {
+                return "";
+            }
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
 
     public String getStatusString() {
         if (isConnected() && mReadingStatus != null) {

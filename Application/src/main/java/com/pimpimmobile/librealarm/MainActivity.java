@@ -61,6 +61,7 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
 
     private View mTriggerGlucoseButton;
     private TextView mStatusTextView;
+    private TextView mStatsTextView;
     private HistoryAdapter mAdapter;
     private Button mActionButton;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -126,6 +127,7 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
         getActionBar().setHomeButtonEnabled(true);
 
         mStatusTextView = (TextView) layout.findViewById(R.id.status_view);
+        mStatsTextView = (TextView) layout.findViewById(R.id.stats_view);
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("first_startup", true)) {
             showDisclaimer(true);
             mIsFirstStartup = true;
@@ -349,19 +351,35 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        if (item.getItemId() == R.id.disclaimer) {
+        final int id = item.getItemId();
+        if (id == R.id.disclaimer) {
             showDisclaimer(false);
-        }
-        if (item.getItemId() == R.id.nightscout) {
+        } else if (id == R.id.nightscout) {
             startActivity(new Intent(this, NightscoutPreferences.class));
-        }
-        if (item.getItemId() == R.id.xdrip_plus) {
-            startActivityForResult(new Intent(this, XdripPlusPreferences.class),0);
-        }
-        if (item.getItemId() == R.id.preferences) {
+        } else if (id == R.id.xdrip_plus) {
+            startActivityForResult(new Intent(this, XdripPlusPreferences.class), 0);
+        } else if (id == R.id.preferences) {
             startActivityForResult(new Intent(this, Preferences.class), 0);
+        } else if (id == R.id.reboot) {
+            rebootWatch();
+        } else if (id == R.id.clearstats) {
+            clearStats();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void rebootWatch() {
+        if (mService != null) {
+            mService.reboot();
+            JoH.static_toast_long("Sending reboot command to watch!");
+        }
+    }
+
+    private void clearStats() {
+        if (mService != null) {
+            mService.clearstats();
+            JoH.static_toast_long("Sending clear statistics command to watch!");
+        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -428,6 +446,9 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
                         // TODO add layout item for battery instead of using append
                         if (mService.getBatteryLevel() > 0)
                             mStatusTextView.append(" Batt: " + mService.getBatteryLevel() + "%");
+
+                        final String statsString = mService.getStatsString();
+                        if (statsString.length() > 0) mStatsTextView.setText(statsString);
                     }
 
                     if (PreferencesUtil.shouldUseRoot(context) && status != null &&
