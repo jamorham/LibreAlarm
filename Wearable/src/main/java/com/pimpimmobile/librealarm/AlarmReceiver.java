@@ -42,7 +42,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
 
         period_ms = Math.max(60000, period_ms);
         final long now = JoH.tsl();
-        final long timestamp_next = ((now / period_ms) * period_ms) + period_ms;
+        final long timestamp_next = (((now + (5 * 1000)) / period_ms) * period_ms) + period_ms;
         final long delay = Math.max((timestamp_next - now) - (5 * 1000), 14999);
         return delay;
     }
@@ -54,6 +54,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         final AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final PendingIntent intent = getAlarmReceiverIntent(context);
         alarmManager.cancel(intent);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime() + delay, intent);
@@ -79,7 +80,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
 
     private static PendingIntent getAlarmReceiverIntent(Context context) {
         Intent intent = new Intent(context, AlarmReceiver.class);
-        return PendingIntent.getBroadcast(context, 0, intent, 0);
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public static void stop(Context context) {
