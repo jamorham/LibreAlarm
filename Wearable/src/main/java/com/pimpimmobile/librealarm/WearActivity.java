@@ -40,6 +40,7 @@ import com.pimpimmobile.librealarm.shareddata.WearableApi;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static com.pimpimmobile.librealarm.RootTools.swichNFCState;
 import static com.pimpimmobile.librealarm.WearIntentService.tryToAddListener;
 import static com.pimpimmobile.librealarm.WearIntentService.tryToRemoveListener;
 import static com.pimpimmobile.librealarm.shareddata.AlgorithmUtil.DEBUG;
@@ -54,6 +55,8 @@ public class WearActivity extends Activity
     public static final int MAX_ATTEMPTS = 5;
 
     public static boolean got_tag_data = false; // have we ever received any tag data?
+
+    public static long last_success = 0;
 
     public static int successes = 0;
 
@@ -114,6 +117,10 @@ public class WearActivity extends Activity
             } else {
                 sendStatusUpdate(Type.ATTENPT_FAILED);
                 PreferencesUtil.setRetries(WearActivity.this, ++retries);
+                if ((retries > 2) && (PreferencesUtil.toggleNFConError(libreAlarm.getAppContext()))) {
+                    Log.e(TAG, "Got errors so turning NFC off");
+                    swichNFCState(false);
+                }
             }
             RootTools.executeScripts(false);
         }
@@ -138,7 +145,8 @@ public class WearActivity extends Activity
             return;
         }
 
-        BatteryManager bm = (BatteryManager)getSystemService(BATTERY_SERVICE);
+
+        final BatteryManager bm = (BatteryManager)getSystemService(BATTERY_SERVICE);
         mBatteryLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
 
 
@@ -147,7 +155,17 @@ public class WearActivity extends Activity
         // TODO check we don't stay awake if wear is disconnected after read
         // TODO check failed connection event callback
         tryToAddListener(this);
-    /*    if ((mGoogleApiClient == null) || (!mGoogleApiClient.isConnected())) {
+
+        final long now = JoH.tsl();
+        if ((now - last_success) < 60000) {
+            Log.e(TAG, "Got tag data within 60 seconds - refusing to try so soon");
+            sendStatusUpdate(Type.WAITING);
+            finish();
+            return;
+        }
+
+
+        /*    if ((mGoogleApiClient == null) || (!mGoogleApiClient.isConnected())) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(Wearable.API)
                     .addConnectionCallbacks(this)
@@ -213,32 +231,37 @@ public class WearActivity extends Activity
                 // extra test delay
                 try {
                     // quick and very dirty
-                    Thread.sleep(1000);
+                    //Thread.sleep(1000);
+                    Thread.sleep(2000);
                 } catch (Exception e) {
                     //
                 }
             Log.d(TAG, "About to discover tag");
 
             mTagDiscovered = false;
-            mNfcAdapter.enableReaderMode(WearActivity.this, new NfcAdapter.ReaderCallback() {
-                @Override
-                public void onTagDiscovered(Tag tag) {
-                    if (!mTagDiscovered) {
-                        mTagDiscovered = true;
-                        Log.d(TAG, "NFC tag discovered - going to read data");
-                        new NfcVReaderTask().execute(tag);
-                    } else {
-                        Log.d(TAG, "Tag already discovered!");
+                mNfcAdapter.enableReaderMode(WearActivity.this, new NfcAdapter.ReaderCallback() {
+                    @Override
+                    public void onTagDiscovered(Tag tag) {
+                        if (!mTagDiscovered) {
+                            mTagDiscovered = true;
+                            final long now = JoH.tsl();
+                            if ((now - last_success) > 60000) {
+                                Log.d(TAG, "NFC tag discovered - going to read data");
+                                new NfcVReaderTask().execute(tag);
+                            } else {
+                                Log.e(TAG, "Got tag data within 60 seconds - refusing to read again so soon");
+                            }
+                        } else {
+                            Log.d(TAG, "Tag already discovered!");
+                        }
                     }
-                }
-            }, NfcAdapter.FLAG_READER_NFC_V | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK | NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, null);
-            } catch (NullPointerException e)
-            {
-                Log.wtf(TAG,"Null pointer exception from NFC subsystem: "+e.toString());
+                }, NfcAdapter.FLAG_READER_NFC_V | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK | NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, null);
+            } catch (NullPointerException e) {
+                Log.wtf(TAG, "Null pointer exception from NFC subsystem: " + e.toString());
                 // TODO do we actually need to reboot watch here after some counter of failures without resolution?
             }
         } else {
-            Log.e(TAG,"nfcAdapter is NULL!!");
+            Log.e(TAG, "nfcAdapter is NULL!!");
         }
         // If NFC reading hasn't been completed within 10 seconds, close the app.
         mHandler.postDelayed(mStopActivityRunnable, 10000);
@@ -256,28 +279,19 @@ public class WearActivity extends Activity
     @Override
     protected void onStop() {
         Log.i(TAG, "onStop");
-        if (mHandler != null) mHandler.removeCallbacksAndMessages(null);
-
-        //if (mRootTools != null) mRootTools.executeScripts(false, 0);
-        RootTools.executeScripts(false, 0);
-        if (mVibrator != null) mVibrator.cancel();
-        if (mNfcAdapter != null) {
-            mNfcAdapter.disableReaderMode(this);
-        }
-        tryToRemoveListener(this);
-       /* if ((mGoogleApiClient != null) && (mGoogleApiClient.isConnected())) {
-            Wearable.MessageApi.removeListener(mGoogleApiClient, this);
-            mGoogleApiClient.disconnect();
-        }*/
-       // if (mRootTools != null) mRootTools.executeScripts(false, 15000);
-        try {
-            Log.d(TAG, "Successes: " + successes + "  Failures: " + failures + "  Success rate:" + ((double) ((successes - failures)) / successes) * 100);
-        } catch (Exception e) {
-            //
-        }
-            if ((mWakeLock != null) && (mWakeLock.isHeld())) mWakeLock.release();
-        finish();
+        finish(); // TODO is this duplicate?
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i(TAG, "onDestroy");
+        try {
+            releaseEverything();
+        } catch (Exception e) {
+            Log.wtf("Error destroying: ", e);
+        }
+        super.onDestroy();
     }
 
     private void setNextAlarm() {
@@ -293,6 +307,34 @@ public class WearActivity extends Activity
         sendStatusUpdate(Type.ATTEMPTING);
     }
 
+    private void releaseEverything() {
+        Log.d(TAG, "releaseEverything() called");
+        if (mHandler != null) mHandler.removeCallbacksAndMessages(null);
+
+        //if (mRootTools != null) mRootTools.executeScripts(false, 0);
+        RootTools.executeScripts(false, 0);
+        if (mVibrator != null) mVibrator.cancel();
+        if (mNfcAdapter != null) {
+            try {
+                mNfcAdapter.disableReaderMode(this);
+            } catch (IllegalStateException e) {
+                Log.e(TAG, "Couldn't disable reader mode: " + e);
+            }
+        }
+        tryToRemoveListener(this);
+       /* if ((mGoogleApiClient != null) && (mGoogleApiClient.isConnected())) {
+            Wearable.MessageApi.removeListener(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }*/
+        // if (mRootTools != null) mRootTools.executeScripts(false, 15000);
+        try {
+            Log.d(TAG, "Successes: " + successes + "  Failures: " + failures + "  Success rate: " + JoH.qs((((double) (successes - failures)) / successes) * 100, 1));
+        } catch (Exception e) {
+            //
+        }
+        if ((mWakeLock != null) && (mWakeLock.isHeld())) mWakeLock.release();
+    }
+
     private void sendAlarmStatusUpdate(Type type, int value, AlgorithmUtil.TrendArrow trendArrow) {
         int attempt = PreferencesUtil.getRetries(this);
         Status status = new Status(type, attempt, WearActivity.MAX_ATTEMPTS,
@@ -304,7 +346,7 @@ public class WearActivity extends Activity
         int attempt = PreferencesUtil.getRetries(this);
         Status status = new Status(type, attempt, WearActivity.MAX_ATTEMPTS,
                 AlarmReceiver.getNextCheck(this), mBatteryLevel,
-                RootTools.isHasRoot());
+                RootTools.isHasRoot(), successes, failures);
         sendStatusUpdate(type, status);
     }
 
@@ -348,7 +390,7 @@ public class WearActivity extends Activity
     }
 
     private void sendResultAndFinish() {
-        SimpleDatabase database = new SimpleDatabase(this);
+        final SimpleDatabase database = new SimpleDatabase(this);
         long id = database.saveMessage(mResult);
         ReadingData.TransferObject transferObject = new ReadingData.TransferObject(id, mResult);
         database.close();
@@ -357,6 +399,7 @@ public class WearActivity extends Activity
         mFinishAfterSentMessages = true;
     }
 
+    // TODO is this in the right section now? Do we even need it?
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(TAG, "onConnectionFailed(): Failed to connect, with result: " + connectionResult);
@@ -383,6 +426,8 @@ public class WearActivity extends Activity
                     return;
                 } else {
                     successes++;
+                    last_success = JoH.tsl();
+                    Log.d(TAG," Successes: "+successes+" @ "+JoH.dateTimeText(last_success));
                 }
                 String tagId = bytesToHexString(tag.getId());
                 int attempt = PreferencesUtil.getRetries(WearActivity.this);
@@ -405,14 +450,16 @@ public class WearActivity extends Activity
                 Log.e(TAG, "Illegal state exception in postExecute: " + e);
 
             } finally {
-                    RootTools.executeScripts(false); // turn it off
+                   if (PreferencesUtil.shouldUseRoot(libreAlarm.getAppContext())) {
+                       RootTools.executeScripts(false); // turn it off
+                   }
             }
         }
 
         @Override
         protected Tag doInBackground(Tag... params) {
-            Tag tag = params[0];
-            NfcV nfcvTag = NfcV.get(tag);
+            final Tag tag = params[0];
+            final NfcV nfcvTag = NfcV.get(tag);
             if (DEBUG) Log.d(TAG, "Attempting to read tag data");
             final boolean multiblock = true;
             try {
@@ -430,7 +477,7 @@ public class WearActivity extends Activity
                     }
 
                     byte[] oneBlock;
-                    Long time = System.currentTimeMillis();
+                    final Long time = System.currentTimeMillis();
                     while (true) {
                         try {
                             oneBlock = nfcvTag.transceive(cmd);
@@ -467,8 +514,8 @@ public class WearActivity extends Activity
         }
     }
 
-    private String bytesToHexString(byte[] src) {
-        StringBuilder builder = new StringBuilder("");
+    private static String bytesToHexString(byte[] src) {
+        final StringBuilder builder = new StringBuilder("");
         if (src == null || src.length <= 0) {
             return "";
         }

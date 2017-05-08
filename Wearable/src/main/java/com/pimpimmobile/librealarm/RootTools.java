@@ -73,6 +73,7 @@ class RootTools {
                 "kill \"$b\"\n" +
                 "fi\n" +
                 "setprop ctl.stop key_vibrate\n" +
+                "setprop ctl.stop gpsd\n\n" +
                 "\n");
 
         // removes xdrip watchface if present
@@ -130,7 +131,8 @@ class RootTools {
     }
 
     private static synchronized void runRootScripts(boolean state) {
-        mWakeLock = JoH.getWakeLock("Nfc-control", 30000);
+        if ((mWakeLock != null) && (mWakeLock.isHeld())) mWakeLock.release();
+        mWakeLock = JoH.getWakeLock("run-root-scripts", 30000);
         final Context mContext = libreAlarm.getAppContext();
         try {
             if (mNfcDestinationState == state) {
@@ -225,6 +227,16 @@ class RootTools {
             return Runtime.getRuntime().exec("su -c service call nfc " + (state ? "6" : "5"));
         } catch (Exception e) {
             Log.e(TAG, "Got exception changing nfc state: " + e);
+        }
+        return null;
+    }
+
+    public static Process reboot() {
+        Log.i(TAG, "Trying to reboot");
+        try {
+            return Runtime.getRuntime().exec("su -c svc power reboot");
+        } catch (Exception e) {
+            Log.e(TAG, "Got exception trying reboot " + e);
         }
         return null;
     }

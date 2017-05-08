@@ -206,10 +206,19 @@ public class WearIntentService extends IntentService implements GoogleApiClient.
     }
 
     public synchronized static void tryToRemoveListener(MessageApi.MessageListener listener) {
-        // TODO check nulls
-        if (mGoogleApiClient.isConnected()) {
-            removeExistingListener();
-            Wearable.MessageApi.removeListener(mGoogleApiClient, listener);
+        // TODO check nulls - check if we should remove even if not connected
+        //  if (mGoogleApiClient.isConnected()) {
+        if (mGoogleApiClient != null) {
+            try {
+                removeExistingListener();
+            } catch (Exception e) {
+                Log.e(TAG, "Got exception removing remote listener: " + e);
+            }
+            try {
+                Wearable.MessageApi.removeListener(mGoogleApiClient, listener);
+            } catch (Exception e) {
+                Log.e(TAG, "Got exception removing listener: " + e);
+            }
         }
     }
 
