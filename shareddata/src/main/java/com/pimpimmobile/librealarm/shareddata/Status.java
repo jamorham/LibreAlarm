@@ -20,6 +20,9 @@ public class Status {
     public int alarmExtraTrendOrdinal;
     public int battery;
     public boolean hasRoot;
+    public int successes = -1;
+    public int failures = -1;
+
 
     public Status(Type type, int attempt, int maxAttempts, long nextCheck) {
         this.status = type;
@@ -28,13 +31,15 @@ public class Status {
         this.nextCheck = nextCheck;
     }
 
-    public Status(Type type, int attempt, int maxAttempts, long nextCheck, int battery, boolean has_root) {
+    public Status(Type type, int attempt, int maxAttempts, long nextCheck, int battery, boolean has_root, int successes, int failures) {
         this.status = type;
         this.attempt = attempt;
         this.maxAttempts = maxAttempts;
         this.nextCheck = nextCheck;
         this.battery = battery;
         this.hasRoot = has_root;
+        this.successes = successes;
+        this.failures = failures;
     }
 
     public Status(Type type, int attempt, int maxAttempts, long nextCheck, int alarmExtraValue,

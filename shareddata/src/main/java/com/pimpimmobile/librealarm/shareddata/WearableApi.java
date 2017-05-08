@@ -30,6 +30,8 @@ public class WearableApi {
     public static final String GLUCOSE = PREFIX + "/glucose";
     public static final String STATUS = PREFIX + "/status_update";
     public static final String GET_UPDATE = PREFIX + "/update";
+    public static final String REBOOT = PREFIX + "/reboot";
+    public static final String CLEAR_STATS = PREFIX + "/clear_stats";
 
     public static boolean sendData(GoogleApiClient client, String command, HashMap<String, String> pairs, ResultCallback<DataApi.DataItemResult> listener) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create(command);
