@@ -45,7 +45,7 @@ public class DataLayerListenerService extends WearableListenerService {
             AlarmReceiver.post(this, 120000);
         } else if (System.currentTimeMillis() > AlarmReceiver.getNextCheck(this) &&
                 PreferencesUtil.getIsStarted(this)) {
-           // startActivity(new Intent(this, WearActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            // startActivity(new Intent(this, WearActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             WearIntentService.startActionDefault(this);
         }
     }
@@ -118,56 +118,70 @@ public class DataLayerListenerService extends WearableListenerService {
     public static void handleMessage(GoogleApiClient client, MessageEvent messageEvent) {
         Log.i(TAG, "received message: " + messageEvent.getSourceNodeId() + ", command: " + messageEvent.getPath());
         switch (messageEvent.getPath()) {
-            case WearableApi.TRIGGER_GLUCOSE: {
+            case WearableApi.TRIGGER_GLUCOSE:
                 if (JoH.ratelimit("trigger-glucose", 5)) {
-                  //  Intent i = new Intent(client.getContext(), WearActivity.class);
-                  //  i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                  //  client.getContext().startActivity(i);
+                    //  Intent i = new Intent(client.getContext(), WearActivity.class);
+                    //  i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    //  client.getContext().startActivity(i);
                     WearIntentService.startActionDefault(client.getContext());
                 }
-            }
-            break;
-            case WearableApi.CANCEL_ALARM: {
+
+                break;
+            case WearableApi.CANCEL_ALARM:
                 PreferencesUtil.setCurrentType(client.getContext(), Type.WAITING);
                 Intent i = new Intent(client.getContext(), WearActivity.class);
                 i.putExtra(WearActivity.EXTRA_CANCEL_ALARM, true);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 client.getContext().startActivity(i);
                 sendStatus(client);
-            }
-            break;
-            case WearableApi.STOP: {
+                break;
+
+            case WearableApi.STOP:
                 PreferencesUtil.setCurrentType(client.getContext(), Type.NOT_RUNNING);
                 PreferencesUtil.setIsStarted(client.getContext(), false);
                 AlarmReceiver.stop(client.getContext());
                 sendStatus(client);
-            }
-            break;
-            case WearableApi.START: {
+                break;
+
+            case WearableApi.START:
                 PreferencesUtil.setCurrentType(client.getContext(), Type.WAITING);
                 PreferencesUtil.setIsStarted(client.getContext(), true);
                 AlarmReceiver.start(client.getContext());
                 AlarmReceiver.post(client.getContext(), 30000);
                 sendStatus(client);
-            }
-            break;
-            case WearableApi.GLUCOSE: { // ACK response
+                break;
+
+            case WearableApi.GLUCOSE:  // ACK response
                 SimpleDatabase database = new SimpleDatabase(client.getContext());
                 database.deleteMessage(Long.valueOf(new String(messageEvent.getData())));
                 database.close();
-            }
-            break;
-            case WearableApi.GET_UPDATE: {
+                break;
+
+            case WearableApi.GET_UPDATE:
                 if (JoH.ratelimit("get-update", 1)) {
-                    SimpleDatabase database = new SimpleDatabase(client.getContext());
-                    for (ReadingData.TransferObject message : database.getMessages()) {
+                    SimpleDatabase databaseb = new SimpleDatabase(client.getContext());
+                    for (ReadingData.TransferObject message : databaseb.getMessages()) {
                         WearableApi.sendMessage(client, WearableApi.GLUCOSE, new Gson().toJson(message), null);
                     }
-                    database.close();
+                    databaseb.close();
                     sendStatus(client);
                 }
-            }
-            break;
+                break;
+
+            case WearableApi.REBOOT:
+                if (JoH.ratelimit("reboot", 30)) {
+                    if (RootTools.isHasRoot()) {
+                        RootTools.reboot();
+                    }
+                }
+                break;
+
+            case WearableApi.CLEAR_STATS:
+                if (JoH.ratelimit("clear_status", 5)) {
+                    WearActivity.successes = 0;
+                    WearActivity.failures = 0;
+                }
+                break;
         }
     }
 

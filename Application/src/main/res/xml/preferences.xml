@@ -55,6 +55,12 @@
             android:dependency="@string/pref_key_root"
             android:defaultValue="false" />
         <CheckBoxPreference
+            android:key="@string/pref_key_switch_nfc_on_error"
+            android:title="@string/toggle_nfc_on_error"
+            android:summary="@string/turn_nfc_off_if_get_errors"
+            android:dependency="@string/pref_key_root"
+            android:defaultValue="true" />
+        <CheckBoxPreference
             android:key="@string/pref_key_clock_speed"
             android:title="@string/pref_key_clock_speed_title"
             android:summary="@string/pref_key_clock_speed_summary"
