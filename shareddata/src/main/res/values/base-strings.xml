@@ -7,6 +7,7 @@
     <string name="pref_key_switch_nfc_on_error">pref_key_nfc_error</string>
     <string name="pref_key_disable_touchscreen">pref_key_disable_touchscreen</string>
     <string name="pref_key_uninstall_xdrip">pref_key_uninstall_xdrip</string>
+    <string name="pref_key_auto_theatre_mode">pref_auto_theatre_mode</string>
     <string name="key_snooze_high">postpone_high</string>
     <string name="key_snooze_low">postpone_low</string>
     <string name="key_alarm_limit_high">alarm_level_high</string>

@@ -109,6 +109,10 @@ public class PreferencesUtil {
         return getBoolean(context, context.getString(R.string.pref_key_switch_nfc_on_error), true);
     }
 
+    public static Boolean automaticallyEnableTheatreMode(Context context) {
+        return getBoolean(context, context.getString(R.string.pref_key_auto_theatre_mode), false);
+    }
+
     public static Boolean uninstallxDrip(Context context) {
         return getBoolean(context, context.getString(R.string.pref_key_uninstall_xdrip), false);
     }

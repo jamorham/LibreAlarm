@@ -41,43 +41,48 @@
             android:defaultValue="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory
-        android:title="Power save features">
+    <PreferenceCategory android:title="Power save features">
         <CheckBoxPreference
+            android:defaultValue="false"
             android:key="@string/pref_key_root"
-            android:title="@string/pref_key_root_title"
             android:summary="@string/pref_key_root_summary"
-            android:defaultValue="false" />
+            android:title="@string/pref_key_root_title" />
         <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="@string/pref_key_root"
+            android:key="@string/pref_key_auto_theatre_mode"
+            android:summary="@string/auto_theatre_mode_preference_summary"
+            android:title="@string/auto_theatre_mode_preference_title" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_key_root"
             android:key="@string/pref_key_switch_nfc"
-            android:title="@string/toggle_nfc"
             android:summary="@string/try_to_turn_nfc_off_when_not_in_use"
-            android:dependency="@string/pref_key_root"
-            android:defaultValue="false" />
+            android:title="@string/toggle_nfc" />
         <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="@string/pref_key_root"
             android:key="@string/pref_key_switch_nfc_on_error"
-            android:title="@string/toggle_nfc_on_error"
             android:summary="@string/turn_nfc_off_if_get_errors"
-            android:dependency="@string/pref_key_root"
-            android:defaultValue="true" />
+            android:title="@string/toggle_nfc_on_error" />
         <CheckBoxPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_key_root"
             android:key="@string/pref_key_clock_speed"
-            android:title="@string/pref_key_clock_speed_title"
             android:summary="@string/pref_key_clock_speed_summary"
-            android:dependency="@string/pref_key_root"
-            android:defaultValue="false" />
+            android:title="@string/pref_key_clock_speed_title" />
         <CheckBoxPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_key_root"
             android:key="@string/pref_key_disable_touchscreen"
-            android:title="@string/pref_key_disable_touchscreen_title"
             android:summaryOn="@string/pref_key_disable_touchscreen_summary"
-            android:dependency="@string/pref_key_root"
-            android:defaultValue="false" />
+            android:title="@string/pref_key_disable_touchscreen_title" />
         <CheckBoxPreference
-            android:key="@string/pref_key_uninstall_xdrip"
-            android:title="@string/uninstall_xdrip_watchface"
-            android:summary="@string/remove_the_xdrip_watchface_from_the_collector_watch"
+            android:defaultValue="false"
             android:dependency="@string/pref_key_root"
-            android:defaultValue="false" />
+            android:key="@string/pref_key_uninstall_xdrip"
+            android:summary="@string/remove_the_xdrip_watchface_from_the_collector_watch"
+            android:title="@string/uninstall_xdrip_watchface" />
     </PreferenceCategory>
 
 </PreferenceScreen>

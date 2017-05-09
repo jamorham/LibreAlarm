@@ -190,5 +190,7 @@
     <string name="clear_statistics">Clear Statistics</string>
     <string name="toggle_nfc_on_error">Toggle NFC on error</string>
     <string name="turn_nfc_off_if_get_errors">Turn NFC off and on if we get read errors (Recommended)</string>
+    <string name="auto_theatre_mode_preference_summary">Enables theatre mode periodically, which disables notifications from the phone activating the watch</string>
+    <string name="auto_theatre_mode_preference_title">Always-On Theatre Mode</string>
 
 </resources>

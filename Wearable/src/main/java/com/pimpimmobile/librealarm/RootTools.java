@@ -172,6 +172,12 @@ class RootTools {
                 }
 
                 if (!state) {
+                    if (PreferencesUtil.automaticallyEnableTheatreMode(mContext)) {
+                        if (JoH.quietratelimit("enable-theatre-mode", 3600)) {
+                            enterTheatreMode();
+                        }
+                    }
+
                     if (PreferencesUtil.disableTouchscreen(mContext)) {
                         // TODO check if already disabled
                         if (JoH.quietratelimit("disable-touchscreen", 7200)) {
@@ -220,6 +226,17 @@ class RootTools {
         return "other error";
     }
 
+    public static Process enterTheatreMode() {
+        // Thanks to Alan Haverty for the idea and implementation of how to do this
+        try {
+            if (DEBUG) Log.d(TAG, "Enabling theatre mode");
+            final Process executeTheatreMode = Runtime.getRuntime().exec("su -c settings put global theater_mode_on 1");
+            if (DEBUG) showProcessOutput(executeTheatreMode);
+        } catch (Exception e) {
+            Log.e(TAG, "Got exception changing theatre state: " + e);
+        }
+        return null;
+    }
 
     public static Process swichNFCState(boolean state) {
         Log.i(TAG, "Trying to switch nfc " + (state ? "on" : "off"));
