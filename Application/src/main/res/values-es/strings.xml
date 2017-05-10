@@ -184,7 +184,7 @@
     <string name="pref_key_root_summary">Se necesita rooted reloj</string>
 
     <!--Title for deinstalling xDrip watchfece -->
-    </string name>="pref_key_unistall_xDrip_watchface_title">Deinstalar esfera xDrip </string>
+    <string name="pref_key_unistall_xDrip_watchface_title">Deinstalar esfera xDrip</string>
 
 <!-- Title for removing xDrip watchfece from collector watch -->
-</string name>="pref_key_remove_xDrip_watchface_from_collector_watch_summary">eliminar esfera xDrip del reloj contador</string 
+<string name="pref_key_remove_xDrip_watchface_from_collector_watch_summary">eliminar esfera xDrip del reloj coleccionador</string 
