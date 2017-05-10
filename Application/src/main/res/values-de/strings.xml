@@ -175,12 +175,36 @@
     <string name="pref_key_disable_touchscreen_title">Touchscreen der Uhr deaktivieren</string>
 
     <!-- Summary for setting allowing the user to disable the watch touchscreen to avoid accidental touches -->
-    <string name="pref_key_disable_touchscreen_summary">Ist der Touchscreen der Uhr deaktiviert, muss man bei Wiederaktivierung, als erstes die Option deaktivieren und die Uhr erneut starten.</string>
+    <string name="pref_key_disable_touchscreen_summary">Ist der Touchscreen der Uhr deaktiviert, muss man bei Wiederaktivierung, als erstes die Option deaktivieren und die Uhr erneut starten</string>
 
     <!-- Title for setting to enable root -->
     <string name="pref_key_root_title">ROOT aktivieren</string>
 
-    <!-- Title for setting to enable root -->
+    <!-- Summary for setting to enable root -->
     <string name="pref_key_root_summary">Erfordert eine gerootete Uhr</string>
+    
+    <!--Title for deinstalling xDrip watchfece -->
+    <string name="pref_key_unistall_xDrip_watchface_title">Deinstalliere xDrip Ziffernblatt</string>
+    
+    <!-- Summary for removing xDrip watchfece from collector watch -->
+    <string name="pref_key_remove_xDrip_watchface_from_collector_watch_summary">Entferne das xDrip Ziffernblatt von der Sammleruhr</string> 
+    
+    <!-- Title for Toggle NFC -->
+    <string name="toggle_nfc">NFC umschalten</string>
+    
+    <!-- Title for Toggle NFC on error -->
+    <string name="toggle_nfc_on_error">Umschalten von NFC auf Fehler</string>
+    
+    <!-- Summary for Toggle NFC -->
+    <string name="try_to_turn_nfc_off_when_not_in_use">Versuche NFC auszuschalten, wenn nicht in Benutzung (Nicht empfohlen)</string>
+    
+    <!-- Summary for Toggle NFC on error -->
+    <string name="turn_nfc_off_if_get_errors">NFC OFF/ON, bei Fehlerübermittlung (Empfohlen)</string>
+    
+    <!-- Reboot watch menu item -->
+    <string name="reboot_watch">Neustart der Uhr (ROOT benötigt)</string>
+    
+    <!-- Clear statistics watch menu item -->
+    <string name="clear_statistics">Statistiken bereinigen</string>
 
 </resources> 
