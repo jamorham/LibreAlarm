@@ -19,6 +19,8 @@ public class PreferencesUtil {
 
     private static final String TAG = "LibrePrefUtil";
 
+    public static int battery_threshold = -1;
+
     // Used on phone
     public static Boolean isNsRestEnabled(Context context) {
         return getBoolean(context, "ns_rest");
@@ -113,6 +115,10 @@ public class PreferencesUtil {
         return getBoolean(context, context.getString(R.string.pref_key_auto_theatre_mode), false);
     }
 
+    public static Boolean useHalfSpeed(Context context) {
+        return getBoolean(context, context.getString(R.string.pref_key_auto_half_speed), false);
+    }
+
     public static Boolean uninstallxDrip(Context context) {
         return getBoolean(context, context.getString(R.string.pref_key_uninstall_xdrip), false);
     }
@@ -121,8 +127,38 @@ public class PreferencesUtil {
         return getString(context, context.getString(R.string.pref_key_glucose_interval), "5");
     }
 
+    public static String getHalfThreshold(Context context) {
+        return getString(context, context.getString(R.string.pref_key_half_percent), "30");
+    }
+
+    public static int getHalfThresholdNumber(Context context) {
+        final String val = getHalfThreshold(context);
+        try {
+            final int value = Integer.parseInt(val);
+            if (value < 2 || value > 90) return 30;
+            return value;
+        } catch (Exception e) {
+            return 30;
+        }
+    }
+
+    public static void updateBatteryThresholdCache(Context context) {
+        battery_threshold = getHalfThresholdNumber(context);
+    }
+
     public static Boolean shouldUseRoot(Context context) {
         return getBoolean(context, context.getString(R.string.pref_key_root));
+    }
+
+    public static boolean shouldGoHalfSpeed(Context context, int battery_level) {
+        if (battery_threshold < 1) {
+            battery_threshold = getHalfThresholdNumber(context);
+        }
+        if ((battery_level < 1) || (battery_level > battery_threshold)) {
+            return false;
+        } else {
+            return useHalfSpeed(context);
+        }
     }
 
     /// / End used in watch

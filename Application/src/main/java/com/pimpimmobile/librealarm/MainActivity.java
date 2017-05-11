@@ -364,6 +364,8 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
             rebootWatch();
         } else if (id == R.id.clearstats) {
             clearStats();
+        } else if (id == R.id.downloadxdripplus) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://xdrip-plus-updates.appspot.com/stable/xdrip-plus-latest.apk")));
         }
         return super.onOptionsItemSelected(item);
     }

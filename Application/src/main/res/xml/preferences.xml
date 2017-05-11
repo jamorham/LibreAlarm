@@ -10,7 +10,7 @@
             android:key="@string/pref_key_err_alarm"
             android:dependency="@string/pref_key_err_alarm_enabled"
             android:title="@string/settings_err_edittext"
-            android:inputType="numberSigned"
+            android:inputType="number"
             android:defaultValue="2" />
         <CheckBoxPreference
             android:key="@string/pref_key_phone_alarm"
@@ -23,8 +23,9 @@
         <EditTextPreference
             android:key="@string/pref_key_glucose_interval"
             android:title="@string/settings_glucose_interval"
-            android:inputType="numberSigned"
-            android:defaultValue="10" />
+            android:summary="@string/glucose_reading_interval_summary"
+            android:inputType="number"
+            android:defaultValue="5" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -41,7 +42,18 @@
             android:defaultValue="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Power save features">
+    <PreferenceCategory android:title="@string/power_save_features">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="@string/pref_key_auto_half_speed"
+            android:summary="@string/scan_half_as_often_when_watch"
+            android:title="@string/slow_interval_when_power_low" />
+        <EditTextPreference
+            android:key="@string/pref_key_half_percent"
+            android:title="@string/power_low_percentage"
+            android:inputType="number"
+            android:dependency="@string/pref_key_auto_half_speed"
+            android:defaultValue="30" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="@string/pref_key_root"

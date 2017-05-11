@@ -1,6 +1,7 @@
 package com.pimpimmobile.librealarm.shareddata;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
@@ -24,6 +25,8 @@ public class AlgorithmUtil {
         SLIGHTLY_UP,
         UP
     }
+
+    private static final String TAG = "LibreAlgor";
 
     private static final int MINUTE = 60000;
 
@@ -69,61 +72,66 @@ public class AlgorithmUtil {
     }
 
     public static ReadingData parseData(int attempt, String tagId, byte[] data) {
-        long watchTime = System.currentTimeMillis();
+        try {
+            long watchTime = System.currentTimeMillis();
 
-        int indexTrend = data[26] & 0xFF;
+            int indexTrend = data[26] & 0xFF;
 
-        int indexHistory = data[27] & 0xFF;
+            int indexHistory = data[27] & 0xFF;
 
-        final int sensorTime = 256 * (data[317] & 0xFF) + (data[316] & 0xFF);
+            final int sensorTime = 256 * (data[317] & 0xFF) + (data[316] & 0xFF);
 
-        long sensorStartTime = watchTime - sensorTime * MINUTE;
+            long sensorStartTime = watchTime - sensorTime * MINUTE;
 
-        ArrayList<GlucoseData> historyList = new ArrayList<>();
-        // TODO checksum!
+            ArrayList<GlucoseData> historyList = new ArrayList<>();
+            // TODO checksum!
 
-        // loads history values (ring buffer, starting at index_trent. byte 124-315)
-        for (int index = 0; index < 32; index++) {
-            int i = indexHistory - index - 1;
-            if (i < 0) i += 32;
-            GlucoseData glucoseData = new GlucoseData();
-            glucoseData.glucoseLevel =
-                    getGlucose(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]});
+            // loads history values (ring buffer, starting at index_trent. byte 124-315)
+            for (int index = 0; index < 32; index++) {
+                int i = indexHistory - index - 1;
+                if (i < 0) i += 32;
+                GlucoseData glucoseData = new GlucoseData();
+                glucoseData.glucoseLevel =
+                        getGlucose(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]});
 
-            glucoseData.glucoseLevelRaw =
-                    getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]});
+                glucoseData.glucoseLevelRaw =
+                        getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]});
 
-            int time = Math.max(0, Math.abs((sensorTime - 3) / 15) * 15 - index * 15);
+                int time = Math.max(0, Math.abs((sensorTime - 3) / 15) * 15 - index * 15);
 
-            glucoseData.realDate = sensorStartTime + time * MINUTE;
-            glucoseData.sensorId = tagId;
-            glucoseData.sensorTime = time;
-            historyList.add(glucoseData);
+                glucoseData.realDate = sensorStartTime + time * MINUTE;
+                glucoseData.sensorId = tagId;
+                glucoseData.sensorTime = time;
+                historyList.add(glucoseData);
+            }
+
+
+            ArrayList<GlucoseData> trendList = new ArrayList<>();
+
+            // loads trend values (ring buffer, starting at index_trent. byte 28-123)
+            for (int index = 0; index < 16; index++) {
+                int i = indexTrend - index - 1;
+                if (i < 0) i += 16;
+                GlucoseData glucoseData = new GlucoseData();
+                glucoseData.glucoseLevel =
+                        getGlucose(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]});
+
+                glucoseData.glucoseLevelRaw =
+                        getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]});
+                int time = Math.max(0, sensorTime - index);
+
+                glucoseData.realDate = sensorStartTime + time * MINUTE;
+                glucoseData.sensorId = tagId;
+                glucoseData.sensorTime = time;
+                trendList.add(glucoseData);
+            }
+
+            PredictionData predictedGlucose = getPredictionData(attempt, tagId, trendList);
+            return new ReadingData(predictedGlucose, trendList, historyList);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Log.wtf(TAG, "Got array index out of bounds: ", e);
+            return null;
         }
-
-
-        ArrayList<GlucoseData> trendList = new ArrayList<>();
-
-        // loads trend values (ring buffer, starting at index_trent. byte 28-123)
-        for (int index = 0; index < 16; index++) {
-            int i = indexTrend - index - 1;
-            if (i < 0) i += 16;
-            GlucoseData glucoseData = new GlucoseData();
-            glucoseData.glucoseLevel =
-                    getGlucose(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]});
-
-            glucoseData.glucoseLevelRaw =
-                    getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]});
-            int time = Math.max(0, sensorTime - index);
-
-            glucoseData.realDate = sensorStartTime + time * MINUTE;
-            glucoseData.sensorId = tagId;
-            glucoseData.sensorTime = time;
-            trendList.add(glucoseData);
-        }
-
-        PredictionData predictedGlucose = getPredictionData(attempt, tagId, trendList);
-        return new ReadingData(predictedGlucose, trendList, historyList);
     }
 
     @NonNull

@@ -90,6 +90,8 @@ public class DataLayerListenerService extends WearableListenerService {
                         }
                     }
 
+                    PreferencesUtil.updateBatteryThresholdCache(libreAlarm.getAppContext());
+
                     WearableApi.sendMessage(mGoogleApiClient, WearableApi.SETTINGS, PreferencesUtil.toString(newSettings), null);
 
                     sendStatus(mGoogleApiClient);

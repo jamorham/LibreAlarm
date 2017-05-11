@@ -192,5 +192,12 @@
     <string name="turn_nfc_off_if_get_errors">Turn NFC off and on if we get read errors (Recommended)</string>
     <string name="auto_theatre_mode_preference_summary">Enables theatre mode periodically, which disables notifications from the phone activating the watch</string>
     <string name="auto_theatre_mode_preference_title">Always-On Theatre Mode</string>
+    <string name="glucose_reading_interval_summary">5 minute (best) or 10 (battery saver)</string>
+    <string name="power_save_features">Power save features</string>
+    <string name="xdrip_plus_settings">xDrip+ Settings</string>
+    <string name="xdrip_plus_download">Download xDrip+</string>
+    <string name="scan_half_as_often_when_watch">Scan half as often when watch battery is less than</string>
+    <string name="slow_interval_when_power_low">Slow interval when power low</string>
+    <string name="power_low_percentage">Power Low percentage</string>
 
 </resources>

@@ -296,7 +296,7 @@ public class WearActivity extends Activity
 
     private void setNextAlarm() {
         if (PreferencesUtil.getIsStarted(this)) {
-            AlarmReceiver.post(this, AlarmReceiver.getNextPeriodDelay(this));
+            AlarmReceiver.post(this, AlarmReceiver.getNextPeriodDelay(this, PreferencesUtil.shouldGoHalfSpeed(this, mBatteryLevel)));
         }
     }
 
@@ -390,12 +390,16 @@ public class WearActivity extends Activity
     }
 
     private void sendResultAndFinish() {
-        final SimpleDatabase database = new SimpleDatabase(this);
-        long id = database.saveMessage(mResult);
-        ReadingData.TransferObject transferObject = new ReadingData.TransferObject(id, mResult);
-        database.close();
-        WearableApi.sendMessage(mGoogleApiClient, WearableApi.GLUCOSE, new Gson().toJson(transferObject), mMessageListener);
-        mMessagesBeingSent++;
+        if (mResult != null) {
+            final SimpleDatabase database = new SimpleDatabase(this);
+            long id = database.saveMessage(mResult);
+            ReadingData.TransferObject transferObject = new ReadingData.TransferObject(id, mResult);
+            database.close();
+            WearableApi.sendMessage(mGoogleApiClient, WearableApi.GLUCOSE, new Gson().toJson(transferObject), mMessageListener);
+            mMessagesBeingSent++;
+        } else {
+            Log.e(TAG, "Not sending result as is null");
+        }
         mFinishAfterSentMessages = true;
     }
 
@@ -429,11 +433,17 @@ public class WearActivity extends Activity
                     last_success = JoH.tsl();
                     Log.d(TAG," Successes: "+successes+" @ "+JoH.dateTimeText(last_success));
                 }
-                String tagId = bytesToHexString(tag.getId());
+                final String tagId = bytesToHexString(tag.getId());
                 int attempt = PreferencesUtil.getRetries(WearActivity.this);
                 mResult = AlgorithmUtil.parseData(attempt, tagId, data);
-                PreferencesUtil.setRetries(WearActivity.this, 1);
-                PreferencesUtil.resetErrorsInARow(WearActivity.this);
+                if (mResult != null) {
+                    PreferencesUtil.setRetries(WearActivity.this, 1);
+                    PreferencesUtil.resetErrorsInARow(WearActivity.this);
+                } else {
+                    Log.e(TAG, "Unable to parse tag data!");
+                    successes--;
+                    failures++;
+                }
                 sendResultAndFinish();
                 setNextAlarm();
                 Danger danger = AlertRules.check(WearActivity.this, mResult.prediction);

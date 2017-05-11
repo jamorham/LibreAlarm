@@ -21,4 +21,6 @@
     <string name="pref_key_text_to_speech_only_alarm">pref_tts_alarm_only</string>
     <string name="pref_key_glucose_interval">pref_glucose_interval</string>
     <string name="pref_key_root">pref_key_root</string>
+    <string name="pref_key_auto_half_speed">pref_half_speed</string>
+    <string name="pref_key_half_percent">pref_half_pc</string>
 </resources>

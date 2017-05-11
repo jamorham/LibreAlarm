@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/disclaimer"
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/disclaimer"
         android:title="@string/disclaimer_title" />
-    <item android:id="@+id/nightscout"
+    <item
+        android:id="@+id/nightscout"
         android:title="@string/nightscout" />
-    <item android:id="@+id/xdrip_plus"
-        android:title="@string/xdrip_plus"/>
-    <item android:id="@+id/preferences"
+    <item
+        android:id="@+id/xdrip_plus"
+        android:title="@string/xdrip_plus_settings" />
+    <item
+        android:id="@+id/preferences"
         android:title="@string/preferences" />
-    <item android:id="@+id/clearstats"
+    <item
+        android:id="@+id/clearstats"
         android:title="@string/clear_statistics" />
-    <item android:id="@+id/reboot"
+    <item
+        android:id="@+id/downloadxdripplus"
+        android:title="@string/xdrip_plus_download" />
+    <item
+        android:id="@+id/reboot"
         android:title="@string/reboot_watch" />
 </menu>

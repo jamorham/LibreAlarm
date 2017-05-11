@@ -32,10 +32,14 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         startWakefulService(context, i);
     }
 
-    public static long getNextPeriodDelay(Context context) {
+    public static long getNextPeriodDelay(Context context, boolean halfspeed) {
         long period_ms;
         try {
             period_ms = Integer.valueOf(PreferencesUtil.getCheckGlucoseInterval(context)) * 60000;
+            if (halfspeed) {
+                period_ms = period_ms * 2;
+                Log.d(TAG, "Going half speed at: " + period_ms);
+            }
         } catch (Exception e) {
             period_ms = 5 * 60000;
         }
