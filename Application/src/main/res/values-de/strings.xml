@@ -175,7 +175,7 @@
     <string name="pref_key_disable_touchscreen_title">Touchscreen der Uhr deaktivieren</string>
 
     <!-- Summary for setting allowing the user to disable the watch touchscreen to avoid accidental touches -->
-    <string name="pref_key_disable_touchscreen_summary">Ist der Touchscreen der Uhr deaktiviert, muss man bei Wiederaktivierung, als erstes die Option deaktivieren und die Uhr erneut starten</string>
+    <string name="pref_key_disable_touchscreen_summary">Ist der Touchscreen der Uhr deaktiviert, muss man vor Wiederaktivierung als erstes die Option deaktivieren und die Uhr erneut starten</string>
 
     <!-- Title for setting to enable root -->
     <string name="pref_key_root_title">ROOT aktivieren</string>
@@ -187,7 +187,7 @@
     <string name="uninstall_xdrip_watchface">Deinstalliere xDrip Ziffernblatt</string>
     
     <!-- Summary for removing xDrip watchfece from collector watch -->
-    <string name="remove_the_xdrip_watchface_from_the_collector_watch">Entferne das xDrip Ziffernblatt von der Sammleruhr</string> 
+    <string name="remove_the_xdrip_watchface_from_the_collector_watch">Entferne das xDrip Ziffernblatt von der auslesenden Uhr</string> 
     
     <!-- Title for Toggle NFC -->
     <string name="toggle_nfc">NFC umschalten</string>
@@ -205,6 +205,33 @@
     <string name="reboot_watch">Neustart der Uhr (ROOT benötigt)</string>
     
     <!-- Clear statistics watch menu item -->
-    <string name="clear_statistics">Statistiken bereinigen</string>
+    <string name="clear_statistics">Statistiken der Uhr bereinigen</string>
+	
+	<!--Title for theatre_mode -->
+	<string name="auto_theatre_mode_preference_title">Aktiviere Theatermodus</string>
+	
+	<!-- Summary for theatre_mode -->
+	<string name="auto_theatre_mode_preference_summary">Aktiviert den Theatermodus in regelmäßigen Abständen und deaktiviert die Benachrichtigungen, welche von dem Smartphone an die Uhr gesendet werden</string>
+	
+	<!-- Summary for reading interval -->
+	<string name="glucose_reading_interval_summary">5 Min (bester Intervall) oder 10 Min (schont den Akku)</string>
+	
+	<!-- Settings for power save features -->
+	<string name="power_save_features">Energiesparfunktionen</string>
+	
+	<!-- Settings for xdrip plus -->
+	<string name="xdrip_plus_settings">xDrip+ Einstellungen</string>
+	
+	<!-- Menu item for xdrip plus download -->
+	<string name="xdrip_plus_download">xDrip+ herunterladen</string>
+	
+	<!-- Title for slow interval when power low -->
+	<string name="slow_interval_when_power_low">Langsamer Intervall bei geringem Akku</string>
+	
+	<!-- Summary for scan half as often when watch -->
+	<string name="scan_half_as_often_when_watch">Scanne halb so oft, wenn die Akkuanzeige der Uhr kleiner ist als</string>
+	
+	<!-- Title for power low percentage -->
+	<string name="power_low_percentage">Grenzwert für Entladung in Prozent</string>
 
 </resources>
