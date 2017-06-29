@@ -373,14 +373,14 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
     private void rebootWatch() {
         if (mService != null) {
             mService.reboot();
-            JoH.static_toast_long("Sending reboot command to watch!");
+            JoH.static_toast_long(this, getString(R.string.reboot_command));
         }
     }
 
     private void clearStats() {
         if (mService != null) {
             mService.clearstats();
-            JoH.static_toast_long("Sending clear statistics command to watch!");
+            JoH.static_toast_long(this, getString(R.string.clear_stats_command));
         }
     }
 
@@ -499,16 +499,27 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
     }
 
     @Override
-    public void onAdapterItemClicked(PredictionData predictionData) {
-        String s = "";
-        boolean isMmol = PreferencesUtil.getBoolean(this, getString(R.string.pref_key_mmol), true);
-        if (predictionData.glucoseLevel == -1) { // ERR
-            s = getString(R.string.err_explanation);
-        } else {
-            for (GlucoseData data : mService.getDatabase().getTrend(predictionData.phoneDatabaseId)) {
-                s += AlgorithmUtil.format(new Date(data.realDate)) + ": " + data.glucose(isMmol) + "\n";
+        public void onAdapterItemClicked(PredictionData predictionData) {
+            String s = "";
+
+            boolean isMmol = PreferencesUtil.getBoolean(this, getString(R.string.pref_key_mmol), true);
+
+            if (predictionData.glucoseLevel == -1) { // ERR
+                s = getString(R.string.err_explanation);
+            } else {
+                for (GlucoseData data : mService.getDatabase().getTrend(predictionData.phoneDatabaseId)) {
+                    s += AlgorithmUtil.format(new Date(data.realDate)) + ": " + data.glucose(isMmol) + "\n";
+                }
+                if (predictionData.glucoseLevel == 0) { // Sensor ERR null
+                    s = getString(sensor_error);
+                }
+                if (predictionData.glucoseLevel < 0) { // Sensor ERR negative
+                    s = getString(R.string.sensor_error);
+                }
+                if (predictionData.trend == 0) { // Sensor ERR TrendArrow
+                    s = getString(R.string.sensor_error);
+                }
             }
-        }
 
         AlertDialog dialog = new AlertDialog.Builder(this).setPositiveButton(android.R.string.ok, null)
                 .setTitle("").setMessage(s).create();

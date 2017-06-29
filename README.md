@@ -1,15 +1,11 @@
 # LibreAlarm
 
-Project consists of three modules
+My fork version:
+https://github.com/jamorham/LibreAlarm
 
-## Application
+The original version:
+https://github.com/pimpimmi/LibreAlarm
 
-The application which runs on the phone.
+## Download
 
-## Wearable
-
-The application which runs on the watch.
-
-## shareddata
-
-Classes the phone and watch have in common to communicate.
+https://github.com/Matze1985/LibreAlarm/releases

@@ -200,4 +200,13 @@
     <string name="slow_interval_when_power_low">Slow interval when power low</string>
     <string name="power_low_percentage">Power Low percentage</string>
 
+    <!-- Red sensor error text shown in glucose list (max 5 characters) -->
+    <string name="s_err">ERR</string>
+
+    <!-- Msg - Sending reboot command -->
+    <string name="reboot_command">Sending reboot command to watch!</string>
+
+    <!-- Msg - Sending clear stats command -->
+    <string name="clear_stats_command">Sending clear statistics command to watch!</string>
+
 </resources>

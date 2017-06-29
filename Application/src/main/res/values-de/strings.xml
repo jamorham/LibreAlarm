@@ -18,6 +18,9 @@
     <!-- Error text shown in glucose list (max 3 characters) -->
     <string name="err">ERR</string>
 
+    <!-- Red sensor error text shown in glucose list (max 5 characters) -->
+    <string name="s_err">ERR</string>
+
     <!-- Stop button text-->
     <string name="button_stop">STOP</string>
 
@@ -175,36 +178,87 @@
     <string name="pref_key_disable_touchscreen_title">Touchscreen der Uhr deaktivieren</string>
 
     <!-- Summary for setting allowing the user to disable the watch touchscreen to avoid accidental touches -->
-    <string name="pref_key_disable_touchscreen_summary">Ist der Touchscreen der Uhr deaktiviert, muss man bei Wiederaktivierung, als erstes die Option deaktivieren und die Uhr erneut starten</string>
+    <string name="pref_key_disable_touchscreen_summary">Ist der Touchscreen der Uhr deaktiviert, muss man vor Wiederaktivierung als erstes die Option deaktivieren und die Uhr erneut starten</string>
 
     <!-- Title for setting to enable root -->
     <string name="pref_key_root_title">ROOT aktivieren</string>
 
     <!-- Summary for setting to enable root -->
     <string name="pref_key_root_summary">Erfordert eine gerootete Uhr</string>
-    
+
     <!--Title for deinstalling xDrip watchfece -->
     <string name="uninstall_xdrip_watchface">Deinstalliere xDrip Ziffernblatt</string>
-    
+
     <!-- Summary for removing xDrip watchfece from collector watch -->
-    <string name="remove_the_xdrip_watchface_from_the_collector_watch">Entferne das xDrip Ziffernblatt von der Sammleruhr</string> 
-    
+    <string name="remove_the_xdrip_watchface_from_the_collector_watch">Entferne das xDrip Ziffernblatt von der auslesenden Uhr</string>
+
     <!-- Title for Toggle NFC -->
     <string name="toggle_nfc">NFC umschalten</string>
-    
+
     <!-- Title for Toggle NFC on error -->
     <string name="toggle_nfc_on_error">Umschalten von NFC auf Fehler</string>
-    
+
     <!-- Summary for Toggle NFC -->
     <string name="try_to_turn_nfc_off_when_not_in_use">Versuche NFC auszuschalten, wenn nicht in Benutzung (Nicht empfohlen)</string>
-    
+
     <!-- Summary for Toggle NFC on error -->
     <string name="turn_nfc_off_if_get_errors">NFC OFF/ON, bei Fehlerübermittlung (Empfohlen)</string>
-    
+
     <!-- Reboot watch menu item -->
     <string name="reboot_watch">Neustart der Uhr (ROOT benötigt)</string>
-    
+
     <!-- Clear statistics watch menu item -->
-    <string name="clear_statistics">Statistiken bereinigen</string>
+    <string name="clear_statistics">Statistiken der Uhr bereinigen</string>
+
+    <!--Title for theatre_mode -->
+    <string name="auto_theatre_mode_preference_title">Aktiviere Theatermodus</string>
+
+    <!-- Summary for theatre_mode -->
+    <string name="auto_theatre_mode_preference_summary">Aktiviert den Theatermodus in regelmäßigen Abständen und deaktiviert die Benachrichtigungen, welche von dem Smartphone an die Uhr gesendet werden</string>
+
+    <!-- Summary for reading interval -->
+    <string name="glucose_reading_interval_summary">5 Min (bester Intervall) oder 10 Min (schont den Akku)</string>
+
+    <!-- Settings for power save features -->
+    <string name="power_save_features">Energiesparfunktionen</string>
+
+    <!-- Settings for xdrip plus -->
+    <string name="xdrip_plus_settings">xDrip+ Einstellungen</string>
+
+    <!-- Menu item for xdrip plus download -->
+    <string name="xdrip_plus_download">xDrip+ herunterladen</string>
+
+    <!-- Title for slow interval when power low -->
+    <string name="slow_interval_when_power_low">Langsamer Intervall bei geringem Akku</string>
+
+    <!-- Summary for scan half as often when watch -->
+    <string name="scan_half_as_often_when_watch">Scanne halb so oft, wenn die Akkuanzeige der Uhr kleiner ist als</string>
+
+    <!-- Title for power low percentage -->
+    <string name="power_low_percentage">Grenzwert für Entladung in Prozent</string>
+
+    <!-- Stats successes -->
+    <string name="stats_successes">Erfolge:</string>
+
+    <!-- Stats successes -->
+    <string name="stats_failures">Fehler:</string>
+
+    <!-- Stats successes rate -->
+    <string name="stats_successes_rate">Erfolgsquote:</string>
+
+    <!-- Msg - Not connected -->
+    <string name="not_connected">Nicht verbunden</string>
+
+    <!-- Msg - Wear not connected -->
+    <string name="wear_not_connected">Wear nicht verbunden</string>
+
+    <!-- Msg - Sending reboot command -->
+    <string name="reboot_command">Neustartbefehl an Uhr gesendet</string>
+
+    <!-- Msg - Sending clear stats command -->
+    <string name="clear_stats_command">Bereinigungsbefehl an Uhr gesendet</string>
+
+    <!-- Red Err - Null -->
+    <string name="sensor_error">Der Sensor wurde fehlerhaft ausgelesen, es konnte kein plausibler Wert ermittelt werden.</string>
 
 </resources>

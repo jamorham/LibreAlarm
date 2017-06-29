@@ -633,7 +633,7 @@ public class WearService extends Service implements DataApi.DataListener, Messag
     public String getStatsString() {
         try {
             if ((mReadingStatus != null) && (mReadingStatus.successes > -1)) {
-                return "Successes: " + mReadingStatus.successes + "  Failures: " + mReadingStatus.failures + "  Success rate: " + JoH.qs(((double)(mReadingStatus.successes - mReadingStatus.failures)) / mReadingStatus.successes * 100, 1)+ "%";
+                return getString(R.string.stats_successes) + " " + mReadingStatus.successes + " " + getString(R.string.stats_failures) + " " + mReadingStatus.failures + " " + getString(R.string.stats_successes_rate) + " " + JoH.qs(((double)(mReadingStatus.successes - mReadingStatus.failures)) / mReadingStatus.successes * 100, 1)+ "%";
             } else {
                 return "";
             }
@@ -673,7 +673,7 @@ public class WearService extends Service implements DataApi.DataListener, Messag
                     }, 16000);
                 }
             }
-            return isConnected() ? "Not connected" : "Wear not connected";
+            return isConnected() ? getString(R.string.not_connected) : getString(R.string.wear_not_connected);
         }
     }
 

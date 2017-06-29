@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static com.pimpimmobile.librealarm.Preferences.low_glucose_limit_value;
 
 public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -103,8 +104,17 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             if (error) {
                 mGlucoseView.setText(R.string.err);
                 mTrendArrow.setImageDrawable(null);
-            } else if (data.glucoseLevel < 36) {
-                mGlucoseView.setText(mContext.getString(R.string.glucose_too_low_string, (isMmol ? "2.0" : "36")));
+            } else if (data.glucoseLevel < 1) {
+                mGlucoseView.setText(mContext.getString(R.string.glucose_too_low_string, (isMmol ? "0.1" : "1"))); // Read clucose value 1
+                mTrendArrow.setImageDrawable(null);
+            if (data.glucoseLevel < 0) { // Check negative values
+                mGlucoseView.setText(R.string.s_err);
+                mTrendArrow.setImageDrawable(null);
+            }
+            if (data.glucoseLevel == 0) { // Check value zero as sensor error
+                mGlucoseView.setText(R.string.s_err);
+                mTrendArrow.setImageDrawable(null);
+                }
             } else {
                 mGlucoseView.setText(String.valueOf(data.glucose(isMmol)));
                 updateTrendArrow(data);
@@ -117,6 +127,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private void updateTrendArrow(PredictionData data) {
             int drawableResource = getTrendDrawable(AlgorithmUtil.getTrendArrow(data));
             if (drawableResource == -1) {
+                mGlucoseView.setTextColor(Color.RED);
+                mGlucoseView.setText(R.string.s_err); // Set sensor error when no trend arrow on display
                 mTrendArrow.setImageDrawable(null);
             } else {
                 mTrendArrow.setImageResource(drawableResource);
