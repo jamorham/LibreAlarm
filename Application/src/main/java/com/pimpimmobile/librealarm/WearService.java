@@ -7,7 +7,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
@@ -44,6 +43,7 @@ import com.pimpimmobile.librealarm.shareddata.WearableApi;
 import com.pimpimmobile.librealarm.xdrip_plus.XdripPlusBroadcast;
 
 import java.nio.charset.Charset;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -258,6 +258,7 @@ public class WearService extends Service implements DataApi.DataListener, Messag
             Notification.Builder builder = new Notification.Builder(this);
             builder.setSmallIcon(R.drawable.ic_launcher);
             Intent notificationIntent = new Intent(this, MainActivity.class);
+            String mLastReadingNull = new String("0");
 
             if (mLastReading != null) {
                 builder.setContentTitle("" + mLastReading.glucose(isMmol) + " " +
@@ -274,7 +275,6 @@ public class WearService extends Service implements DataApi.DataListener, Messag
         }
         mNotificationShowing = show;
     }
-
 
     private void syncNightscout() {
         final List<PredictionData> data = mDatabase.getNsSyncData();
