@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -19,6 +21,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -39,7 +42,6 @@ import com.pimpimmobile.librealarm.nightscout.NightscoutPreferences;
 import com.pimpimmobile.librealarm.quicksettings.QuickSettingsItem;
 import com.pimpimmobile.librealarm.quicksettings.QuickSettingsView;
 import com.pimpimmobile.librealarm.quicksettings.QuickSettingsView.QuickSettingsChangeListener;
-import com.pimpimmobile.librealarm.shareddata.AlgorithmUtil;
 import com.pimpimmobile.librealarm.shareddata.GlucoseData;
 import com.pimpimmobile.librealarm.shareddata.PredictionData;
 import com.pimpimmobile.librealarm.shareddata.PreferencesUtil;
@@ -50,6 +52,12 @@ import com.pimpimmobile.librealarm.xdrip_plus.XdripPlusPreferences;
 
 import java.util.Date;
 import java.util.HashMap;
+
+import static com.pimpimmobile.librealarm.R.string.sensor_error;
+import static com.pimpimmobile.librealarm.shareddata.AlgorithmUtil.CONFIDENCE_LIMIT;
+import static com.pimpimmobile.librealarm.shareddata.AlgorithmUtil.format;
+import static com.pimpimmobile.librealarm.shareddata.Status.Type.ALARM_HIGH;
+import static com.pimpimmobile.librealarm.shareddata.Status.Type.ALARM_LOW;
 
 public class MainActivity extends Activity implements WearService.WearServiceListener,
         SimpleDatabase.DatabaseListener, HistoryAdapter.OnListItemClickedListener,
@@ -373,14 +381,14 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
     private void rebootWatch() {
         if (mService != null) {
             mService.reboot();
-            JoH.static_toast_long("Sending reboot command to watch!");
+            JoH.static_toast_long(this, getString(R.string.reboot_command));
         }
     }
 
     private void clearStats() {
         if (mService != null) {
             mService.clearstats();
-            JoH.static_toast_long("Sending clear statistics command to watch!");
+            JoH.static_toast_long(this, getString(R.string.clear_stats_command));
         }
     }
 
@@ -476,7 +484,7 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
         if (snoozeHigh > System.currentTimeMillis()) {
             mSnoozeHighParent.setVisibility(View.VISIBLE);
             mSnoozeHighTextView.setText(getString(R.string.alarm_disabled_high_text,
-                    AlgorithmUtil.format(new Date(snoozeHigh))));
+                    format(new Date(snoozeHigh))));
         } else {
             mSnoozeHighParent.setVisibility(View.GONE);
         }
@@ -486,7 +494,7 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
         if (snoozeLow > System.currentTimeMillis()) {
             mSnoozeLowParent.setVisibility(View.VISIBLE);
             mSnoozeLowTextView.setText(getString(R.string.alarm_disabled_low_text,
-                    AlgorithmUtil.format(new Date(snoozeLow))));
+                    format(new Date(snoozeLow))));
         } else {
             mSnoozeLowParent.setVisibility(View.GONE);
         }
@@ -499,16 +507,21 @@ public class MainActivity extends Activity implements WearService.WearServiceLis
     }
 
     @Override
-    public void onAdapterItemClicked(PredictionData predictionData) {
-        String s = "";
-        boolean isMmol = PreferencesUtil.getBoolean(this, getString(R.string.pref_key_mmol), true);
-        if (predictionData.glucoseLevel == -1) { // ERR
-            s = getString(R.string.err_explanation);
-        } else {
-            for (GlucoseData data : mService.getDatabase().getTrend(predictionData.phoneDatabaseId)) {
-                s += AlgorithmUtil.format(new Date(data.realDate)) + ": " + data.glucose(isMmol) + "\n";
+        public void onAdapterItemClicked(PredictionData predictionData) {
+            String s = "";
+
+            boolean isMmol = PreferencesUtil.getBoolean(this, getString(R.string.pref_key_mmol), true);
+
+            if (predictionData.glucoseLevel == -1) { // ERR
+                s = getString(R.string.err_explanation);
+            } else {
+                for (GlucoseData data : mService.getDatabase().getTrend(predictionData.phoneDatabaseId)) {
+                    s += format(new Date(data.realDate)) + ": " + data.glucose(isMmol) + "\n";
+                }
+                if (predictionData.glucoseLevel == 0 || predictionData.glucoseLevel < 0 || predictionData.confidence > CONFIDENCE_LIMIT) { // Sensor ERR null // Sensor ERR negative // Sensor ERR TrendArrow
+                    s = getString(sensor_error);
+                }
             }
-        }
 
         AlertDialog dialog = new AlertDialog.Builder(this).setPositiveButton(android.R.string.ok, null)
                 .setTitle("").setMessage(s).create();

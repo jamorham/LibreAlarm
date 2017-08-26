@@ -374,7 +374,7 @@ public class WearActivity extends Activity
         return true;
     }
 
-    private void doAlarm(Type type, int value, AlgorithmUtil.TrendArrow arrow) {
+    private void doAlarm(final Type type, int value, AlgorithmUtil.TrendArrow arrow) {
         mFinishAfterSentMessages = false;
         sendAlarmStatusUpdate(type, value, arrow);
         mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);

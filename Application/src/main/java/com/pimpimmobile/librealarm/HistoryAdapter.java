@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-
 public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private SimpleDateFormat mTimeFormat = new SimpleDateFormat("HH:mm:ss");
@@ -103,8 +102,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             if (error) {
                 mGlucoseView.setText(R.string.err);
                 mTrendArrow.setImageDrawable(null);
-            } else if (data.glucoseLevel < 36) {
-                mGlucoseView.setText(mContext.getString(R.string.glucose_too_low_string, (isMmol ? "2.0" : "36")));
             } else {
                 mGlucoseView.setText(String.valueOf(data.glucose(isMmol)));
                 updateTrendArrow(data);
@@ -116,7 +113,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         private void updateTrendArrow(PredictionData data) {
             int drawableResource = getTrendDrawable(AlgorithmUtil.getTrendArrow(data));
-            if (drawableResource == -1) {
+            if (drawableResource == -1 || data.glucoseLevel < 0 || data.glucoseLevel == 0) {
+                mGlucoseView.setTextColor(Color.MAGENTA);
+                mGlucoseView.setText(R.string.s_err); // Set sensor error when no trend arrow on display, check negative and is zero values
                 mTrendArrow.setImageDrawable(null);
             } else {
                 mTrendArrow.setImageResource(drawableResource);

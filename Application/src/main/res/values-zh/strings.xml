@@ -183,4 +183,7 @@
     <!-- Title for setting to enable root -->
     <string name="pref_key_root_summary">Requires rooted watch</string>
 
+    <!-- Red sensor error text shown in glucose list (max 5 characters) -->
+    <string name="s_err">ERR</string>
+
 </resources>

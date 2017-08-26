@@ -200,4 +200,31 @@
     <string name="slow_interval_when_power_low">Slow interval when power low</string>
     <string name="power_low_percentage">Power Low percentage</string>
 
+    <!-- Red sensor error text shown in glucose list (max 5 characters) -->
+    <string name="s_err">ERR</string>
+
+    <!-- Msg - Sending clear stats command -->
+    <string name="clear_stats_command">Sending clear statistics command to watch!</string>
+
+    <!-- Stats successes -->
+    <string name="stats_successes">Successes:</string>
+
+    <!-- Stats successes -->
+    <string name="stats_failures">Failures:</string>
+
+    <!-- Stats successes rate -->
+    <string name="stats_successes_rate">Success rate:</string>
+
+    <!-- Msg - Not connected -->
+    <string name="not_connected">Not connected</string>
+
+    <!-- Msg - Wear not connected -->
+    <string name="wear_not_connected">Wear not connected</string>
+
+    <!-- Msg - Sending reboot command -->
+    <string name="reboot_command">Sending reboot command to watch!</string>
+
+    <!-- Red Err - Null -->
+    <string name="sensor_error">The sensor has been read incorrectly, no plausible value could be determined.</string>
+
 </resources>
