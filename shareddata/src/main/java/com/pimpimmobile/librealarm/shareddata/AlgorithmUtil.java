@@ -127,7 +127,7 @@ public class AlgorithmUtil {
             }
 
             PredictionData predictedGlucose = getPredictionData(attempt, tagId, trendList);
-            return new ReadingData(predictedGlucose, trendList, historyList);
+            return new ReadingData(predictedGlucose, trendList, historyList, data);
         } catch (ArrayIndexOutOfBoundsException e) {
             Log.wtf(TAG, "Got array index out of bounds: ", e);
             return null;

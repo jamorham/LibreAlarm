@@ -477,7 +477,7 @@ public class WearActivity extends Activity
                 final byte[] uid = tag.getId();
                 final int step = multiblock ? 3 : 1;
 
-                for (int i = 0; i <= 40; i = i + step) {
+                for (int i = 0; i <= 43; i = i + step) {
                     byte[] cmd;
                     if (multiblock) {
                         cmd = new byte[]{0x02, 0x23, (byte) i, 0x02}; // multi-block read 3 blocks
