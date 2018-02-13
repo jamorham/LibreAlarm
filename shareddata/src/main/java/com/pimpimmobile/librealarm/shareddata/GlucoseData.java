@@ -23,6 +23,6 @@ public class GlucoseData implements Comparable<GlucoseData> {
 
     @Override
     public int compareTo(GlucoseData another) {
-        return (int) (realDate - another.realDate);
+        return Long.valueOf(realDate).compareTo(Long.valueOf(another.realDate));
     }
 }
